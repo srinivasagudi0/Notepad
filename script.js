@@ -9,13 +9,19 @@ function countWords() {
 
 document.getElementById("note-title").addEventListener("input", countWords);
 document.getElementById("note-content").addEventListener("input", countWords);
-document.getElementById("note-title").addEventListener("input", countWords);
 
 function parse() {
     const key = "notepad-notes";
-    const data = JSON.parse(localStorage.getItem(key));
-    if (!data) return null;
-    return JSON.parse(data)
+    const data = localStorage.getItem(key);
+    if (!data) {
+        return null;
+    }
+    try {
+        return JSON.parse(data);
+    } catch (e) {
+        console.error("Error parsing note data:", e);
+        return null;
+    }
 }
 
 const savedNote = parse();
