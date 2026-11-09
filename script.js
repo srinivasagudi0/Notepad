@@ -41,24 +41,15 @@ if (notes.length > 0) {
 }
 
 function SaveCurrent() {
-    const title = document.getElementById("note-title");
-    const content = document.getElementById("note-content");
-    if (title) {
-        if (title.value.trim().length == 0){
-            return;
-        }
-    }
-    let note = [{
-        id: Date.now()+"jkjj",
-        title: title.value,
-        pinned: false,
-        updatedAt: new Date().toISOString(),
-        content: content.value,
-    }];
-    localStorage.setItem("notepad-notes", JSON.stringify(notes))
+   const note = notes.find(n => n.id === activeNoteId);
+   if (!note) return;
 
-    const status = document.getElementById("save-status")
-    status.textContent = "Saved";
+   note.title = document.getElementById("note-title").value;
+   note.content = document.getElementById("note-content").value;
+   note.updatedAt = new Date().toISOString();
+
+    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    document.getElementById("save-status").textContent = "Saved";
 }
 
 const NOTES = parse() || [];
