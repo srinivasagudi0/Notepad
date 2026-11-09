@@ -53,3 +53,24 @@ function SaveCurrent() {
 }
 
 const NOTES = parse() || [];
+
+function CreateNote() {
+    const note = {
+        id: Date.now()+ "asjias",
+        title: "",
+        content: "",
+        pinned: false,
+        updatedAt: new Date().toISOString()
+    };
+    notes.push(note);
+    activeNoteId = note.id;
+
+    document.getElementById("note-title").value = "";
+    document.getElementById("note-content").value = "";
+    countWords();
+
+    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    document.getElementById("save-status").textContent = "Not Saved";
+}
+
+document.getElementById('new-note').addEventListener('click', CreateNote);
