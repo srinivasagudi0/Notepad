@@ -85,11 +85,32 @@ document.getElementById('new-note').addEventListener('click', CreateNote);
 function renderNotes() {
     const notesList = document.getElementById("notes-list");
     notesList.innerHTML = "";
-    
+
     notes.forEach(note => { 
-        const noteElement = document.createElement("BUTTON");
+        const noteElement = document.createElement("button");
         noteElement.textContent = note.title || "Untitled";
         notesList.appendChild(noteElement);
+        noteElement.addEventListener("click", () => {
+            openNote(note.id);
+        });
+        if(note.id === activeNoteId) {
+            noteElement.classList.add("active");
+        }
     });
 }
 
+function openNote(id) {
+    if (activeNoteId) {
+        SaveCurrent();
+    }
+
+    const note = notes.find(n => n.id === id);
+    if (!note) return;
+
+    activeNoteId = note.id;
+    document.getElementById("note-title").value = note.title;
+    document.getElementById("note-content").value = note.content;
+    countWords();
+    document.getElementById("save-status").textContent = "Saved";
+    renderNotes();
+}
