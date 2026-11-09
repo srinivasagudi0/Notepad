@@ -10,15 +10,20 @@ function countWords() {
 document.getElementById("note-title").addEventListener("input", countWords);
 document.getElementById("note-content").addEventListener("input", countWords);
 
-function parse(name) {
+function parse() {
     const key = "notepad-notes";
-    return JSON.parse((localStorage.getItem(key)).getItem(name))
+    const notes = JSON.parse(localStorage.getItem(key));
+    if (!data) return null;
+    return JSON.parse(data)
 }
 
-const title = parse("title");
-const pinned = parse("pinned");
-const updatedAt = parse("updatedAt");
-const content = parse("content");
+const savedNote = parse();
+if (savedNote) {
+    document.getElementById("note-content").value = savedNote.content;
+    document.getElementById("note-title").value = savedNote.title;
+    document.getElementById("save-status").textContent = "Saved";
+    countWords();
+}
 
 document.getElementById("note-title").value = title;
 
