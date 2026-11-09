@@ -83,12 +83,16 @@ document.getElementById('new-note').addEventListener('click', CreateNote);
 
 
 function renderNotes() {
+
+    const search = document.getElementById("search-notes").value.toLowerCase().trim();
+
     const notesList = document.getElementById("notes-list");
     notesList.innerHTML = "";
 
-    const sortedNotes = [...notes].sort((a,b) => {
-        return Number(b.pinned) - Number(a.pinned) || new Date(b.updatedAt) - new Date(a.updatedAt);
-    });
+    const sortedNotes = notes.filter(note => note.title.toLowerCase().includes(search) ||
+    note.content.toLowerCase().includes(search)).sort((a, b) => {
+        Number(b.pinned)- Number(a.pinned) 
+    })
 
     sortedNotes.forEach(note => { 
         const noteElement = document.createElement("button");
@@ -150,3 +154,5 @@ function pinNote() {
 }
 
 document.getElementById("note-pin").addEventListener("click", pinNote);
+
+document.getElementById("search-notes").addEventListener("input", renderNotes);
