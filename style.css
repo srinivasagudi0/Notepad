@@ -60,3 +60,10 @@ main {
     background-color: #c7e3ff;
     border: 2px solid #007bff;
 }
+
+
+#notes-list button.pinned {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    font-size: 1rem;
+}

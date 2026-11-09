@@ -86,9 +86,16 @@ function renderNotes() {
     const notesList = document.getElementById("notes-list");
     notesList.innerHTML = "";
 
-    notes.forEach(note => { 
+    const sortedNotes = [...notes].sort((a,b) => {
+        return Number(b.pinned) - Number(a.pinned) || new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+
+    sortedNotes.forEach(note => { 
         const noteElement = document.createElement("button");
-        noteElement.textContent = note.title || "Untitled";
+        if (note.pinned) {
+            noteElement.classList.add("pinned");
+        }   
+        noteElement.textContent = `${note.pinned ? "📌 " : ""}${note.title || "Untitled"}`;
         notesList.appendChild(noteElement);
         noteElement.addEventListener("click", () => {
             openNote(note.id);
@@ -122,7 +129,7 @@ function deleteNote() {
 
     if (!noteID) return;
     notes = notes.filter(n => n.id !== activeNoteId);
-    localStorage.removeItem("notepad-notes");
+    localStorage.setItem("notepad-notes", JSON.stringify(notes));
     activeNoteId = null;
     document.getElementById("note-title").value = "";
     document.getElementById("note-content").value = "";
@@ -132,3 +139,14 @@ function deleteNote() {
 }
 
 document.getElementById("delete-note").addEventListener("click", deleteNote);
+
+function pinNote() {
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return;
+
+    note.pinned = !note.pinned;
+    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    renderNotes();
+}
+
+document.getElementById("note-pin").addEventListener("click", pinNote);
