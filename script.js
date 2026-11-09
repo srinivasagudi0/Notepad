@@ -52,9 +52,12 @@ function SaveCurrent() {
     document.getElementById("save-status").textContent = "Saved";
 }
 
-const NOTES = parse() || [];
 
 function CreateNote() {
+    if (activeNoteId) {
+        SaveCurrent();
+    }
+
     const note = {
         id: Date.now()+ "asjias",
         title: "",
@@ -70,7 +73,7 @@ function CreateNote() {
     countWords();
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
-    document.getElementById("save-status").textContent = "Not Saved";
+    document.getElementById("save-status").textContent = "Saved";
 }
 
 document.getElementById('new-note').addEventListener('click', CreateNote);
