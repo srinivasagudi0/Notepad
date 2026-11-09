@@ -38,6 +38,7 @@ if (notes.length > 0) {
     document.getElementById("note-content").value = notes[0].content;
     countWords();
     document.getElementById("save-status").textContent = "Saved";
+    renderNotes();
 }
 
 function SaveCurrent() {
@@ -50,6 +51,7 @@ function SaveCurrent() {
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
+    renderNotes();
 }
 
 
@@ -74,6 +76,20 @@ function CreateNote() {
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
+    renderNotes();
 }
 
 document.getElementById('new-note').addEventListener('click', CreateNote);
+
+
+function renderNotes() {
+    const notesList = document.getElementById("notes-list");
+    notesList.innerHTML = "";
+    
+    notes.forEach(note => { 
+        const noteElement = document.createElement("BUTTON");
+        noteElement.textContent = note.title || "Untitled";
+        notesList.appendChild(noteElement);
+    });
+}
+
