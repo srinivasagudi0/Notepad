@@ -1,0 +1,49 @@
+main {
+    min-height: 100vh;
+
+}
+
+#note-title {
+    min-width: 100%;
+    font-size: 1.5rem;
+    color: rgb(0, 132, 255);
+}
+
+#note-content {
+    min-width: 101%;
+    min-height: 35rem;
+    color: black;
+    font-size: 1.1rem;
+}
+
+#save-note {
+    color: green;
+    background-color: black;
+}
+
+#delete-note {
+    color: red;
+    background-color: black;
+}
+
+#note-pin {
+    color:rgb(0, 183, 255);
+    background-color: black;
+}
+
+#theme-toggle {
+    color: greenyellow;
+    background:black;
+}
+
+#export-note {
+    font-size: 0.7rem;
+    background: rgb(6, 106, 193);
+    color: rgb(196, 166, 17);
+}
+
+.note-stats {
+    display: flex;
+    gap: 10px;
+}
+

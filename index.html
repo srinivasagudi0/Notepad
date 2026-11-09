@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+        
+    </head>
+    <body>
+    <aside>
+
+            <h1>Notepad</h1>
+            <button>New +</button>
+            <input placeholder="Search notes">
+            <div id="notes-list"></div>
+        </aside>
+        
+        <main>
+            <input id="note-title" placeholder="Untitled">
+            <textarea id="note-content"></textarea>
+            <button id="save-note" onclick="SaveCurrent()">Save</button>
+            <button id="delete-note">Delete</button>
+            <button id="note-pin">📌 Pin</button>
+            <button id="export-note">Export</button>
+            <button id="theme-toggle">Themes</button>
+            <div class="note-stats">
+            <p id="word-count">0 words</p>
+            <p id="char-count">0 charecters</p>
+            <p id="save-status">Saved</p>
+            </div>
+        </main>
+        <script src="script.js"></script>
+    </body>
+</html>
