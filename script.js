@@ -114,3 +114,21 @@ function openNote(id) {
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
 }
+
+function deleteNote() {
+    const confirm = window.confirm("Are you sure you want to delete this note?");
+    if (!confirm) return;
+    const noteID = notes.find(n => n.id === activeNoteId);
+
+    if (!noteID) return;
+    notes = notes.filter(n => n.id !== activeNoteId);
+    localStorage.removeItem("notepad-notes");
+    activeNoteId = null;
+    document.getElementById("note-title").value = "";
+    document.getElementById("note-content").value = "";
+    countWords();
+    document.getElementById("save-status").textContent = "Deleted";
+    renderNotes();
+}
+
+document.getElementById("delete-note").addEventListener("click", deleteNote);
