@@ -1,3 +1,6 @@
+let notes = [];
+let activeNoteId = null;
+
 function countWords() {
     const text = document.getElementById("note-content").value;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -13,25 +16,29 @@ document.getElementById("note-content").addEventListener("input", countWords);
 function parse() {
     const key = "notepad-notes";
     const data = localStorage.getItem(key);
-    if (!data) {
-        return null;
-    }
+    if (!data) {return [];}
     try {
-        return JSON.parse(data);
+        const saved = JSON.parse(data);
+        if (Array.isArray(saved)) {
+            return saved;
+        }
+        return [saved];
     } catch (e) {
         console.error("Error parsing note data:", e);
-        return null;
+        return [];;
     }
 }
 
-const savedNote = parse();
-if (savedNote) {
-    document.getElementById("note-content").value = savedNote.content;
-    document.getElementById("note-title").value = savedNote.title;
+notes = parse();
+
+if (notes.length > 0) {
+    activeNoteId = notes[0].id;
+
+    document.getElementById("note-title").value = notes[0].title;
+    document.getElementById("note-content").value = notes[0].content;
     countWords();
     document.getElementById("save-status").textContent = "Saved";
 }
-
 
 function SaveCurrent() {
     const title = document.getElementById("note-title");
@@ -41,18 +48,17 @@ function SaveCurrent() {
             return;
         }
     }
-    let note = {
+    let note = [{
         id: Date.now()+"jkjj",
         title: title.value,
         pinned: false,
         updatedAt: new Date().toISOString(),
         content: content.value,
-    }
-    localStorage.setItem("notepad-notes", JSON.stringify(note))
+    }];
+    localStorage.setItem("notepad-notes", JSON.stringify(notes))
 
     const status = document.getElementById("save-status")
     status.textContent = "Saved";
 }
 
-
-
+const NOTES = parse() || [];
