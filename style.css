@@ -91,3 +91,46 @@ body {
     margin-top: 10px;
     rotate: 1deg;
 }
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    gap: 20px;
+    padding: 20px;
+}
+
+aside {
+    width: 260px;
+    flex-shrink: 0;
+}
+
+main {
+    flex: 1;
+    min-width: 0;
+}
+
+#note-title,
+#note-content {
+    width: 100%;
+    min-width: 0;
+}
+
+#note-content {
+    min-height: 60vh;
+    resize: vertical;
+}
+
+@media (max-width: 600px) {
+    body {
+        flex-direction: column;
+    }
+
+    aside {
+        width: 100%;
+    }
+}
