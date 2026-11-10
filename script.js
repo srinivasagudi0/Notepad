@@ -193,11 +193,58 @@ function toggleDark() {
     noteContent.style.backgroundColor="black";
     noteContent.style.color ="white";
     noteContent.style.marginBottom = "10px";
-    actions=document.querySelector("#action button");
+    actions=document.querySelectorAll("#action button");
     actions.style.borderColor="white"; // make it apply to all button not jsut save
     stats = document.getElementById("note-stats")
     stats.style.color ="white";
 };
+
+function toggleCyberpunk() {
+    const body = document.getElementById("page");
+    body.style.backgroundColor = "#090014";
+
+    const title = document.getElementById("title");
+    title.style.color = "#ff00ff";
+
+    const newNote = document.getElementById("new-note");
+    newNote.style.backgroundColor = "#17002e";
+    newNote.style.borderColor = "#ff00ff";
+    newNote.style.color = "#00ffff";
+
+    const search = document.getElementById("search-notes");
+    search.style.backgroundColor = "#17002e";
+    search.style.color = "#00ffff";
+    search.style.borderColor = "#ff00ff";
+
+    const noteTitle = document.getElementById("note-title");
+    noteTitle.style.backgroundColor = "#17002e";
+    noteTitle.style.color = "#00ffff";
+    noteTitle.style.borderColor = "#ff00ff";
+    noteTitle.style.marginBottom = "5px";
+
+    const noteContent = document.getElementById("note-content");
+    noteContent.style.backgroundColor = "#17002e";
+    noteContent.style.color = "#ffffff";
+    noteContent.style.borderColor = "#ff00ff";
+    noteContent.style.marginBottom = "10px";
+
+    const actions = document.querySelectorAll("#action button");
+    actions.forEach(button => {
+        button.style.backgroundColor = "#17002e";
+        button.style.borderColor = "#ff00ff";
+        button.style.color = "#00ffff";
+    });
+
+    const stats = document.getElementById("note-stats");
+    stats.style.color = "#ff00ff";
+
+    const noteButtons = document.querySelectorAll("#notes-list button");
+    noteButtons.forEach(button => {
+        button.style.backgroundColor = "#17002e";
+        button.style.color = "#00ffff";
+        button.style.borderColor = "#ff00ff";
+    });
+}
 
 function ToggleTheme() {
     // 5 themes: cyberpunk, darkest, light, fantasy+ retro, christmas
@@ -205,3 +252,4 @@ function ToggleTheme() {
 }
 
 allListeners();
+
