@@ -255,8 +255,10 @@ function toggleDark() {
     noteContent.style.backgroundColor="black";
     noteContent.style.color ="white";
     noteContent.style.marginBottom = "10px";
-    actions=document.querySelectorAll("#action button");
-    actions.style.borderColor="white"; // make it apply to all button not jsut save
+    const actions=document.querySelectorAll("#action button");
+    actions.forEach(button => {
+        button.style.borderColor="white";
+    });
     stats = document.getElementById("note-stats")
     stats.style.color ="white";
 };
