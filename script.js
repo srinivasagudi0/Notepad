@@ -35,7 +35,6 @@ if (notes.length > 0) {
     document.getElementById("note-content").value = notes[0].content;
     countWords();
     document.getElementById("save-status").textContent = "Saved";
-    renderNotes();
 }
 
 function SaveCurrent() {
@@ -75,33 +74,44 @@ function CreateNote() {
     renderNotes();
 }
 
-function renderNotes() {
 
+function renderNotes() {
     const search = document.getElementById("search-notes").value.toLowerCase().trim();
     const notesList = document.getElementById("notes-list");
 
-    const sortedNotes = notes.filter(note => note.title.toLowerCase().includes(search) ||
-    note.content.toLowerCase().includes(search)).sort((a, b) => {
-        return Number(b.pinned)- Number(a.pinned) 
-    })
+    notesList.innerHTML = "";
 
-    sortedNotes.forEach(note => { 
+    const sortedNotes = notes.filter(note => 
+        note.title.toLowerCase().includes(search) ||
+        note.content.toLowerCase().includes(search)
+    ).sort((a, b) => {
+        return Number(b.pinned) - Number(a.pinned);
+    });
+
+    sortedNotes.forEach(note => {
         const noteElement = document.createElement("button");
+
         if (note.pinned) {
             noteElement.classList.add("pinned");
-        }   
+        }
+
         noteElement.textContent = `${note.pinned ? "📌 " : ""}${note.title || "Untitled"}`;
-        notesList.appendChild(noteElement);
+
         noteElement.addEventListener("click", () => {
             openNote(note.id);
         });
-        if(note.id === activeNoteId) {
+
+        if (note.id === activeNoteId) {
             noteElement.classList.add("active");
         }
-    }); 
+
+        notesList.appendChild(noteElement);
+    });
+
     themes[themeIndex]();
 
     const activeButton = document.querySelector("#notes-list button.active");
+
     if (activeButton) {
         activeButton.style.outline = "2px solid #007bff";
         activeButton.style.outlineOffset = "-2px";
@@ -417,7 +427,7 @@ if (themeIndex < 0 || themeIndex >= themes.length) {
     themeIndex = 0;
 }
 
-themes[themeIndex]();
+renderNotes();
 function ToggleTheme() {
     themeIndex++;
     if (themeIndex > 4) {
