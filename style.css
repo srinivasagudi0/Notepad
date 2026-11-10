@@ -134,3 +134,12 @@ main {
         width: 100%;
     }
 }
+
+#action {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+button {
+    cursor: pointer;
+}
