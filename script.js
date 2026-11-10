@@ -293,11 +293,69 @@ function toggleRetro() {
     });
 }
 
+function toggleChristmas() {
+    const body = document.getElementById("page");
+    body.style.backgroundColor = "#103b2b";
+
+    const title = document.getElementById("title");
+    title.style.color = "#ffffff";
+
+    const newNote = document.getElementById("new-note");
+    newNote.style.backgroundColor = "#a30000";
+    newNote.style.borderColor = "#d4af37";
+    newNote.style.color = "#ffffff";
+
+    const search = document.getElementById("search-notes");
+    search.style.backgroundColor = "#fffaf0";
+    search.style.color = "#a30000";
+    search.style.borderColor = "#d4af37";
+
+    const noteTitle = document.getElementById("note-title");
+    noteTitle.style.backgroundColor = "#fffaf0";
+    noteTitle.style.color = "#a30000";
+    noteTitle.style.borderColor = "#d4af37";
+    noteTitle.style.marginBottom = "5px";
+
+    const noteContent = document.getElementById("note-content");
+    noteContent.style.backgroundColor = "#fffaf0";
+    noteContent.style.color = "#103b2b";
+    noteContent.style.borderColor = "#d4af37";
+    noteContent.style.marginBottom = "10px";
+
+    const actions = document.querySelectorAll("#action button");
+    actions.forEach(button => {
+        button.style.backgroundColor = "#a30000";
+        button.style.borderColor = "#d4af37";
+        button.style.color = "#ffffff";
+    });
+
+    const stats = document.getElementById("note-stats");
+    stats.style.color = "#ffffff";
+
+    const noteButtons = document.querySelectorAll("#notes-list button");
+    noteButtons.forEach(button => {
+        button.style.backgroundColor = "#fffaf0";
+        button.style.color = "#a30000";
+        button.style.borderColor = "#d4af37";
+    });
+}
+
+let themeIndex = Number(localStorage.getItem("themeIndex")) || 0;
+const themes = [toggleWhite,toggleDark, toggleCyberpunk, toggleRetro, toggleChristmas];
+
+if (themeIndex < 0 || themeIndex >= themes.length) {
+    themeIndex = 0;
+}
+
+themes[themeIndex]();
 function ToggleTheme() {
-    // 5 themes: cyberpunk, darkest, light, fantasy+ retro, christmas
-    toggleDark();
+    themeIndex++;
+    if (themeIndex > 4) {
+        themeIndex = 0;
+    }
+    themes[themeIndex]();
+    localStorage.setItem("themeIndex", themeIndex); 
 }
 
 allListeners();
 
-toggleRetro();
