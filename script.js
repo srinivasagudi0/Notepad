@@ -246,6 +246,53 @@ function toggleCyberpunk() {
     });
 }
 
+function toggleRetro() {
+    const body = document.getElementById("page");
+    body.style.backgroundColor = "#0e3f01ce";
+
+    const title = document.getElementById("title");
+    title.style.color = "#614124";
+
+    const newNote = document.getElementById("new-note");
+    newNote.style.backgroundColor = "#fff4db";
+    newNote.style.borderColor = "#9c7749";
+    newNote.style.color = "#614124";
+
+    const search = document.getElementById("search-notes");
+    search.style.backgroundColor = "#fff4db";
+    search.style.color = "#614124";
+    search.style.borderColor = "#9c7749";
+
+    const noteTitle = document.getElementById("note-title");
+    noteTitle.style.backgroundColor = "#fff4db";
+    noteTitle.style.color = "#614124";
+    noteTitle.style.borderColor = "#9c7749";
+    noteTitle.style.marginBottom = "5px";
+
+    const noteContent = document.getElementById("note-content");
+    noteContent.style.backgroundColor = "#fff4db";
+    noteContent.style.color = "#614124";
+    noteContent.style.borderColor = "#9c7749";
+    noteContent.style.marginBottom = "10px";
+
+    const actions = document.querySelectorAll("#action button");
+    actions.forEach(button => {
+        button.style.backgroundColor = "#fff4db";
+        button.style.borderColor = "#9c7749";
+        button.style.color = "#614124";
+    });
+
+    const stats = document.getElementById("note-stats");
+    stats.style.color = "#614124";
+
+    const noteButtons = document.querySelectorAll("#notes-list button");
+    noteButtons.forEach(button => {
+        button.style.backgroundColor = "#fff4db";
+        button.style.color = "#614124";
+        button.style.borderColor = "#9c7749";
+    });
+}
+
 function ToggleTheme() {
     // 5 themes: cyberpunk, darkest, light, fantasy+ retro, christmas
     toggleDark();
@@ -253,3 +300,4 @@ function ToggleTheme() {
 
 allListeners();
 
+toggleRetro();
