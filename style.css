@@ -1,6 +1,6 @@
-main {
+body {
     min-height: 100vh;
-
+    background-color: #FFFF;
 }
 
 #note-title {
@@ -42,9 +42,14 @@ main {
     color: rgb(196, 166, 17);
 }
 
-.note-stats {
+#note-stats {
     display: flex;
     gap: 10px;
+    rotate: -1deg;
+    font-family: 'Courier New';
+    font-weight: 900;
+    text-decoration: underline;
+    text-decoration-style: dotted;
 }
 
 #notes-list button {
@@ -54,7 +59,15 @@ main {
     margin: 6px 0;
     padding: 10px;
     cursor: pointer;
+    background-color: white;;
+    border-radius: 999px;
+    transition: 0.2s ease-in-out; 
 }
+
+#note-list button:hover {
+    background-color: red;
+}
+
 
 #notes-list button.active {
     background-color: #c7e3ff;
@@ -66,4 +79,15 @@ main {
     background-color: #fff3cd;
     border: 2px solid #ffc107;
     font-size: 1rem;
+}
+
+#new-note {
+    margin-bottom: 10px;
+}
+
+#action {
+    display: flex;
+    gap:15px;
+    margin-top: 10px;
+    rotate: 1deg;
 }

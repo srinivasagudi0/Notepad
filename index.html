@@ -3,10 +3,9 @@
         <link rel="stylesheet" href="style.css">
         
     </head>
-    <body>
-    <aside>
-
-            <h1>Notepad</h1>
+    <body id="page">
+        <aside>
+            <h1 id="title">Notepad</h1>
             <button id="new-note">New +</button>
             <input placeholder="Search notes" id="search-notes">
             <div id="notes-list"></div>
@@ -15,12 +14,14 @@
         <main>
             <input id="note-title" placeholder="Untitled">
             <textarea id="note-content"></textarea>
-            <button id="save-note" onclick="SaveCurrent()">Save</button>
-            <button id="delete-note">Delete</button>
-            <button id="note-pin">📌 Pin</button>
-            <button id="export-note">Export</button>
-            <button id="theme-toggle">Themes</button>
-            <div class="note-stats">
+            <div id="action">
+                <button id="save-note" onclick="SaveCurrent()">Save</button>
+                <button id="delete-note">Delete</button>
+                <button id="note-pin">📌 Pin</button>
+                <button id="export-note">Export</button>
+                <button id="theme-toggle">Themes</button>
+            </div>
+            <div id="note-stats">
             <p id="word-count">0 words</p>
             <p id="char-count">0 charecters</p>
             <p id="save-status">Saved</p>

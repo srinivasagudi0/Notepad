@@ -10,9 +10,6 @@ function countWords() {
     document.getElementById("save-status").textContent = "Not Saved";
 }
 
-document.getElementById("note-title").addEventListener("input", countWords);
-document.getElementById("note-content").addEventListener("input", countWords);
-
 function parse() {
     const key = "notepad-notes";
     const data = localStorage.getItem(key);
@@ -54,14 +51,13 @@ function SaveCurrent() {
     renderNotes();
 }
 
-
 function CreateNote() {
     if (activeNoteId) {
         SaveCurrent();
     }
 
     const note = {
-        id: Date.now()+ "asjias",
+        id: crypto.randomUUID(),
         title: "",
         content: "",
         pinned: false,
@@ -78,9 +74,6 @@ function CreateNote() {
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
 }
-
-document.getElementById('new-note').addEventListener('click', CreateNote);
-
 
 function renderNotes() {
 
@@ -107,7 +100,7 @@ function renderNotes() {
         if(note.id === activeNoteId) {
             noteElement.classList.add("active");
         }
-    });
+    }); 
 }
 
 function openNote(id) {
@@ -126,6 +119,17 @@ function openNote(id) {
     renderNotes();
 }
 
+function allListeners() {
+    document.getElementById("note-title").addEventListener("input", countWords);
+    document.getElementById("note-content").addEventListener("input", countWords);
+    document.getElementById("delete-note").addEventListener("click", deleteNote);
+    document.getElementById("note-pin").addEventListener("click", pinNote);
+    document.getElementById("search-notes").addEventListener("input", renderNotes);
+    document.getElementById("export-note").addEventListener("click", exportNotes);  
+    document.getElementById('new-note').addEventListener('click', CreateNote);
+    document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
+}
+
 function deleteNote() {
     const confirm = window.confirm("Are you sure you want to delete this note?");
     if (!confirm) return;
@@ -142,8 +146,6 @@ function deleteNote() {
     renderNotes();
 }
 
-document.getElementById("delete-note").addEventListener("click", deleteNote);
-
 function pinNote() {
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
@@ -152,10 +154,6 @@ function pinNote() {
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     renderNotes();
 }
-
-document.getElementById("note-pin").addEventListener("click", pinNote);
-
-document.getElementById("search-notes").addEventListener("input", renderNotes);
 
 function exportNotes() {
     SaveCurrent();
@@ -171,4 +169,39 @@ function exportNotes() {
     URL.revokeObjectURL(url);
 }
 
-document.getElementById("export-note").addEventListener("click", exportNotes);
+function toggleWhite() {
+   title = document.getElementById("title")
+}
+
+function toggleDark() {
+    body = document.getElementById("page");
+    body.style.backgroundColor = 'black';
+    title = document.getElementById("title")
+    title.style.color = 'white';
+    newNote = document.getElementById("new-note");
+    newNote.style.backgroundColor ='black';
+    newNote.style.borderColor='white'
+    newNote.style.color = 'white';
+    search = document.getElementById("search-notes")
+    search.style.backgroundColor = "black";
+    search.style.color = "white";
+    noteTitle = document.getElementById("note-title");
+    noteTitle.style.backgroundColor = "black";
+    noteTitle.style.marginBottom = "5px";
+    noteTitle.style.borderColor ="green";
+    noteContent = document.getElementById("note-content");
+    noteContent.style.backgroundColor="black";
+    noteContent.style.color ="white";
+    noteContent.style.marginBottom = "10px";
+    actions=document.querySelector("#action button");
+    actions.style.borderColor="white"; // make it apply to all button not jsut save
+    stats = document.getElementById("note-stats")
+    stats.style.color ="white";
+};
+
+function ToggleTheme() {
+    // 5 themes: cyberpunk, darkest, light, fantasy+ retro, christmas
+    toggleDark();
+}
+
+allListeners();
