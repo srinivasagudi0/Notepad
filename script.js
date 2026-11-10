@@ -181,6 +181,7 @@ function exportNotes() {
     document.body.appendChild(a);
     a.click();
     a.remove()
+    window.open(url, "_blank");
 
     setTimeout(() => {
         URL.revokeObjectURL(url);
