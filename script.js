@@ -78,9 +78,7 @@ function CreateNote() {
 function renderNotes() {
 
     const search = document.getElementById("search-notes").value.toLowerCase().trim();
-
     const notesList = document.getElementById("notes-list");
-    notesList.innerHTML = "";
 
     const sortedNotes = notes.filter(note => note.title.toLowerCase().includes(search) ||
     note.content.toLowerCase().includes(search)).sort((a, b) => {
@@ -101,6 +99,14 @@ function renderNotes() {
             noteElement.classList.add("active");
         }
     }); 
+    themes[themeIndex]();
+
+    const activeButton = document.querySelector("#notes-list button.active");
+    if (activeButton) {
+        activeButton.style.outline = "2px solid #007bff";
+        activeButton.style.outlineOffset = "-2px";
+        activeButton.style.fontWeight = "bold";
+    }
 }
 
 function openNote(id) {
