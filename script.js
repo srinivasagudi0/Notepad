@@ -91,7 +91,7 @@ function renderNotes() {
 
     const sortedNotes = notes.filter(note => note.title.toLowerCase().includes(search) ||
     note.content.toLowerCase().includes(search)).sort((a, b) => {
-        Number(b.pinned)- Number(a.pinned) 
+        return Number(b.pinned)- Number(a.pinned) 
     })
 
     sortedNotes.forEach(note => { 
@@ -156,3 +156,19 @@ function pinNote() {
 document.getElementById("note-pin").addEventListener("click", pinNote);
 
 document.getElementById("search-notes").addEventListener("input", renderNotes);
+
+function exportNotes() {
+    SaveCurrent();
+    const dataStr = JSON.stringify(notes, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "notes.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById("export-note").addEventListener("click", exportNotes);
