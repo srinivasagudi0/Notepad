@@ -156,23 +156,84 @@ function pinNote() {
 }
 
 function exportNotes() {
+    if(!activeNoteId) {
+        alert("No note selected to export");
+        return;
+    }
     SaveCurrent();
-    const dataStr = JSON.stringify(notes, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
+    
+    const note = notes.find(n=>n.id === activeNoteId);
+    if(!note) {
+        alert("Note not found");
+        return;
+    }
+
+    const blob = new Blob([note.content], {
+        type: "text/plain;charset=utf-8"
+    })
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "notes.json";
-    a.click();
+    a.href = url
+    
+    const fileName = (note.title.trim() || "Untitled").replace(/[^a-zA-Z0-9]/g, '_') + ".txt";
+    a.download = fileName;
 
-    URL.revokeObjectURL(url);
-}
+    document.body.appendChild(a);
+    a.click();
+    a.remove()
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+
+}   
 
 function toggleWhite() {
-   title = document.getElementById("title")
-}
+    const body = document.getElementById("page");
+    body.style.backgroundColor = "#f4f7fb";
 
+    const title = document.getElementById("title");
+    title.style.color = "#2563eb";
+
+    const newNote = document.getElementById("new-note");
+    newNote.style.backgroundColor = "#2563eb";
+    newNote.style.borderColor = "#1d4ed8";
+    newNote.style.color = "#ffffff";
+
+    const search = document.getElementById("search-notes");
+    search.style.backgroundColor = "#ffffff";
+    search.style.color = "#1e293b";
+    search.style.borderColor = "#cbd5e1";
+
+    const noteTitle = document.getElementById("note-title");
+    noteTitle.style.backgroundColor = "#ffffff";
+    noteTitle.style.color = "#2563eb";
+    noteTitle.style.borderColor = "#cbd5e1";
+    noteTitle.style.marginBottom = "5px";
+
+    const noteContent = document.getElementById("note-content");
+    noteContent.style.backgroundColor = "#ffffff";
+    noteContent.style.color = "#1e293b";
+    noteContent.style.borderColor = "#cbd5e1";
+    noteContent.style.marginBottom = "10px";
+
+    const actions = document.querySelectorAll("#action button");
+    actions.forEach(button => {
+        button.style.backgroundColor = "#ffffff";
+        button.style.color = "#2563eb";
+        button.style.borderColor = "#bfdbfe";
+    });
+
+    const stats = document.getElementById("note-stats");
+    stats.style.color = "#64748b";
+
+    const noteButtons = document.querySelectorAll("#notes-list button");
+    noteButtons.forEach(button => {
+        button.style.backgroundColor = "#ffffff";
+        button.style.color = "#334155";
+        button.style.borderColor = "#e2e8f0";
+    });
+}
 function toggleDark() {
     body = document.getElementById("page");
     body.style.backgroundColor = 'black';
@@ -359,3 +420,4 @@ function ToggleTheme() {
 
 allListeners();
 
+// toggle white is done,
