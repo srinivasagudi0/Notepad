@@ -88,8 +88,17 @@ function CreateNote() {
 
 function addElements(){
     // add elements based on what mode the editor is. In md and html it shows preview and nothing for text.
-    
+    editorType = document.getElementById("editor-type").value;
+    const htmlPreview = document.getElementById("html-preview");
+    if (editorType === "html") {
+        htmlPreview.hidden = false;
+        const content = document.getElementById("note-content").value;
+        htmlPreview.srcdoc = content;
+     } else {
+        htmlPreview.hidden = true;
+    }
 }
+
 
 function renderNotes() {
     const search = document.getElementById("search-notes").value.toLowerCase().trim();
@@ -168,6 +177,7 @@ function allListeners() {
         note.contentFormat = document.getElementById("editor-type").value;
         localStorage.setItem("notepad-notes", JSON.stringify(notes));
     })
+    document.getElementById("note-content").addEventListener("input", addElements);
 }
 
 function deleteNote() {
