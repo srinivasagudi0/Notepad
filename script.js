@@ -234,6 +234,8 @@ function allListeners() {
         }
 
     });
+
+
 }
 
 function deleteNote() {
@@ -534,6 +536,24 @@ function autoSave() {
     saveTimer = setTimeout(() => {
         SaveCurrent();
     }, 1000)
+}
+
+function findText() {
+    const findInput =  document.getElementById("find-text").value;
+    const doc = document.getElementById("note-content").value;
+
+    if (findInput.trim() === "") {
+        alert("Please enter text to find");
+        return;
+    }
+
+    const findIndex = doc.indexOf(findInput);
+    if (findIndex !== -1) {
+        document.getElementById("note-content").focus();
+        document.getElementById("note-content").setSelectionRange(findIndex, findIndex + findInput.length);
+    } else {
+        alert("Text not found");
+    }
 }
 
 allListeners();
