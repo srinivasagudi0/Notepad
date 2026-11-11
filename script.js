@@ -94,11 +94,21 @@ function addElements(){
         htmlPreview.hidden = false;
         const content = document.getElementById("note-content").value;
         htmlPreview.srcdoc = content;
-     } else {
+     } else if (editorType === "markdown") {
+        htmlPreview.hidden = true;
+        const content = document.getElementById("note-content").value;
+        const markdownPreview = document.getElementById("markdown-preview");
+        markdownPreview.hidden = false;
+        markdownPreview.innerHTML = convertToMarkdown(content);
+    } else {
         htmlPreview.hidden = true;
     }
 }
 
+function convertToMarkdown(content) {
+    const html = marked.parse(content);
+    return html;
+}
 
 function renderNotes() {
     const search = document.getElementById("search-notes").value.toLowerCase().trim();
