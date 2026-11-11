@@ -45,7 +45,6 @@ body {
 #note-stats {
     display: flex;
     gap: 10px;
-    rotate: -1deg;
     font-family: 'Courier New';
     font-weight: 900;
     text-decoration: underline;
@@ -91,7 +90,6 @@ body {
     display: flex;
     gap:15px;
     margin-top: 10px;
-    rotate: 1deg;
 }
 
 * {

@@ -55,12 +55,26 @@ function CreateNote() {
         SaveCurrent();
     }
 
+    const selectElement = document.getElementById("editor-type");
+    let editorType = selectElement.value;
+
+    selectElement.addEventListener('change', (event) => {
+        editorType = event.target.value;
+        console.log(editorType);
+    })
+  
+
     const note = {
         id: crypto.randomUUID(),
         title: "",
         content: "",
+        contentaFormat: editorType, // like markdown, txt or html or more i dont know
         pinned: false,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        revision: 0,
+        ownerId: null,
+        collaborators: [],
+        shareMode: (""|| "private")
     };
     notes.push(note);
     activeNoteId = note.id;
@@ -74,6 +88,10 @@ function CreateNote() {
     renderNotes();
 }
 
+function addElements(){
+    // add elements based on what mode the editor is. In md and html it shows preview and nothing for text.
+    
+}
 
 function renderNotes() {
     const search = document.getElementById("search-notes").value.toLowerCase().trim();
@@ -438,5 +456,3 @@ function ToggleTheme() {
 }
 
 allListeners();
-
-// toggle white is done,
