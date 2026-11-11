@@ -58,17 +58,13 @@ function CreateNote() {
     const selectElement = document.getElementById("editor-type");
     let editorType = selectElement.value;
 
-    selectElement.addEventListener('change', (event) => {
-        editorType = event.target.value;
-        console.log(editorType);
-    })
   
 
     const note = {
         id: crypto.randomUUID(),
         title: "",
         content: "",
-        contentaFormat: editorType, // like markdown, txt or html or more i dont know
+        contentFormat: editorType, // like markdown, txt or html or more i dont know
         pinned: false,
         updatedAt: new Date().toISOString(),
         revision: 0,
@@ -146,6 +142,7 @@ function openNote(id) {
     if (!note) return;
 
     activeNoteId = note.id;
+    document.getElementById("editor-type").value = note.contentFormat || "text";
     document.getElementById("note-title").value = note.title;
     document.getElementById("note-content").value = note.content;
     countWords();
