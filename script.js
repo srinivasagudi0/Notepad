@@ -235,7 +235,9 @@ function allListeners() {
 
     });
 
-
+    document.getElementById("find-button").addEventListener("click", findText);
+    document.getElementById("replace-button").addEventListener("click", replaceText);
+    document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
 }
 
 function deleteNote() {
@@ -577,7 +579,6 @@ function replaceText() {
         alert("Text not found");
     }
 }
-// need to connect the button
 
 function replaceAllText() {
     const findInput = document.getElementById("find-text").value;
