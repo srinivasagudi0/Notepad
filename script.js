@@ -556,4 +556,27 @@ function findText() {
     }
 }
 
+function replaceText() {
+    const findInput = document.getElementById("find-text").value;
+    const replaceInput = document.getElementById("replace-text").value;
+    const doc = document.getElementById("note-content").value;
+
+    if (findInput.trim() === "") {
+        alert("Please enter text to find");
+        return;
+    }
+    
+    const findIndex = doc.indexOf(findInput);
+    if (findIndex !== -1) {
+        const newDoc = doc.substring(0, findIndex) + replaceInput + doc.substring(findIndex + findInput.length);
+        document.getElementById("note-content").value = newDoc;
+        addElements();
+        countWords();
+        autoSave();
+    } else {
+        alert("Text not found");
+    }
+}
+// need to connect the button
+
 allListeners();
