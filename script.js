@@ -30,6 +30,7 @@ notes = parse();
 
 if (notes.length > 0) {
     activeNoteId = notes[0].id;
+    document.getElementById("editor-type").value = notes[0].contentFormat || "text";
 
     document.getElementById("note-title").value = notes[0].title;
     document.getElementById("note-content").value = notes[0].content;
@@ -43,6 +44,7 @@ function SaveCurrent() {
 
    note.title = document.getElementById("note-title").value;
    note.content = document.getElementById("note-content").value;
+   note.contentFormat = document.getElementById("editor-type").value;
    note.updatedAt = new Date().toISOString();
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
@@ -159,6 +161,13 @@ function allListeners() {
     document.getElementById("export-note").addEventListener("click", exportNotes);  
     document.getElementById('new-note').addEventListener('click', CreateNote);
     document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
+    document.getElementById("editor-type").addEventListener('change', () => {
+        const note = notes.find(n => n.id === activeNoteId);
+        if (!note) return;
+
+        note.contentFormat = document.getElementById("editor-type").value;
+        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    })
 }
 
 function deleteNote() {
