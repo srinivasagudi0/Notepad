@@ -108,7 +108,7 @@ function addElements(){
 
 function convertToMarkdown(content) {
     const html = marked.parse(content);
-    return domPurify.sanitize(html);
+    return DOMPurify.sanitize(html);
 }
 
 function renderNotes() {
@@ -231,11 +231,6 @@ function allListeners() {
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "m") {
             event.preventDefault();
             document.getElementById("note-title").focus();
-        }
-
-        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "r") {
-            event.preventDefault();
-            location.reload();
         }
 
     });
@@ -535,7 +530,7 @@ function ToggleTheme() {
 let saveTimer;
 
 function autoSave() {
-    clearInterval(saveTimer);
+    clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
         SaveCurrent();
     }, 1000)
