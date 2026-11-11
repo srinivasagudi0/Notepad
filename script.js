@@ -108,7 +108,7 @@ function addElements(){
 
 function convertToMarkdown(content) {
     const html = marked.parse(content);
-    return DOMPurify.sanitize(html);
+    return domPurify.sanitize(html);
 }
 
 function renderNotes() {
@@ -189,6 +189,56 @@ function allListeners() {
         localStorage.setItem("notepad-notes", JSON.stringify(notes));
     })
     document.getElementById("note-content").addEventListener("input", addElements);
+    document.getElementById("note-title").addEventListener("input", autoSave);
+    document.getElementById("note-content").addEventListener("input", autoSave);
+    document.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+            event.preventDefault();
+            SaveCurrent();
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
+            event.preventDefault();
+            document.getElementById("search-notes").focus();
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "n") {
+            event.preventDefault();
+            CreateNote();
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
+            event.preventDefault();
+            exportNotes();
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
+            event.preventDefault();
+            deleteNote();
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
+            event.preventDefault();
+            pinNote();
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "t") {
+            event.preventDefault();
+            ToggleTheme();
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "h") {
+            event.preventDefault();
+            document.getElementById("note-content").focus();
+        }
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "m") {
+            event.preventDefault();
+            document.getElementById("note-title").focus();
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "r") {
+            event.preventDefault();
+            location.reload();
+        }
+
+    });
 }
 
 function deleteNote() {
@@ -480,6 +530,15 @@ function ToggleTheme() {
     }
     themes[themeIndex]();
     localStorage.setItem("themeIndex", themeIndex); 
+}
+
+let saveTimer;
+
+function autoSave() {
+    clearInterval(saveTimer);
+    saveTimer = setTimeout(() => {
+        SaveCurrent();
+    }, 1000)
 }
 
 allListeners();
