@@ -579,4 +579,21 @@ function replaceText() {
 }
 // need to connect the button
 
+function replaceAllText() {
+    const findInput = document.getElementById("find-text").value;
+    const replaceInput = document.getElementById("replace-text").value;
+    const doc = document.getElementById("note-content").value;
+
+    if (findInput.trim() === "") {
+        alert("Please enter text to find");
+        return;
+    }
+
+    const newDoc = doc.split(findInput).join(replaceInput);
+    document.getElementById("note-content").value = newDoc;
+    addElements();
+    countWords();
+    autoSave();
+}
+
 allListeners();
