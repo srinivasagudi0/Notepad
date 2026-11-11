@@ -1,5 +1,15 @@
+import { Editor } from "https://cdn.jsdelivr.net/npm/@tiptap/core@3.31.3/+esm";
+import StarterKit from "https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@3.31.3/+esm";
+
 let notes = [];
 let activeNoteId = null;
+const richEditor = new Editor({
+    element: document.getElementById("rich-text-content"),
+    extensions: [
+        StarterKit
+    ],
+    content: "<p>Start writing your note here...</p>"
+});
 
 function countWords() {
     const text = document.getElementById("note-content").value;

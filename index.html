@@ -18,15 +18,18 @@
                 <iframe id="html-preview" title="Html Preview" sandbox="allow-same-origin" hidden></iframe>
                 <div id="markdown-preview" hidden></div>
                 <div id="rich-text-editor" hidden>
-                    <button id="bold-button"><b>B</b></button>
-                    <button id="italic-button"><i>I</i></button>
-                    <button id="underline-button"><u>U</u></button>
-                    <button id="strike-button"><s>S</s></button>
-                    <button id="link-button">Link</button>
-                    <button id="heading1">H1</button>
-                    <button id="heading2">H2</button>
-                    <button id="numbered-list">Numbered List</button>
-                    <button id="bulleted-list">Bulleted List</button>
+                    <div id="rich-text-toolbar">
+                        <button id="bold-button"><b>B</b></button>
+                        <button id="italic-button"><i>I</i></button>
+                        <button id="underline-button"><u>U</u></button>
+                        <button id="strike-button"><s>S</s></button>
+                        <button id="link-button">Link</button>
+                        <button id="heading1">H1</button>
+                        <button id="heading2">H2</button>
+                        <button id="numbered-list">Numbered List</button>
+                        <button id="bulleted-list">Bulleted List</button>
+                    </div>
+                    <div id="rich-text-content"></div>
                 </div>
                 <select id="editor-type">
                     <option selected value="text">Text</option>
@@ -59,5 +62,6 @@
         <script src="script.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+        <script type="module" src="richtext.js"></script>
     </body>
 </html>
