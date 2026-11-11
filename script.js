@@ -90,6 +90,7 @@ function addElements(){
     // add elements based on what mode the editor is. In md and html it shows preview and nothing for text.
     editorType = document.getElementById("editor-type").value;
     const htmlPreview = document.getElementById("html-preview");
+    const markdownPreview = document.getElementById("markdown-preview");
     if (editorType === "html") {
         htmlPreview.hidden = false;
         const content = document.getElementById("note-content").value;
@@ -97,17 +98,17 @@ function addElements(){
      } else if (editorType === "markdown") {
         htmlPreview.hidden = true;
         const content = document.getElementById("note-content").value;
-        const markdownPreview = document.getElementById("markdown-preview");
         markdownPreview.hidden = false;
         markdownPreview.innerHTML = convertToMarkdown(content);
     } else {
         htmlPreview.hidden = true;
+        markdownPreview.hidden = true;
     }
 }
 
 function convertToMarkdown(content) {
     const html = marked.parse(content);
-    return html;
+    return DOMPurify.sanitize(html);
 }
 
 function renderNotes() {
