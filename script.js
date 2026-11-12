@@ -661,23 +661,20 @@ function loadNoteIntoEditors(note) {
 }
 
 function updateDocumentStats() {
-    loadingDocument = true;
-    const note = notes.find(n => n.id === activeNoteId);
-    try {
-        if (note.contentFormat === "richtext") {
-            richEditor.commands.setContent(note.content || "<p></p>");
-            document.getElementById("note-content").value ="";
-        } else {
-            richEditor.commands.setContent("<p></p>");
-            document.getElementById('note-content').value = note.content || "";
-        } 
-    } finally {
-        loadingDocument=false;
+    const mode = document.getElementById("editor-type").value;
+    let text = "";
+
+    if (mode === "richtext") {
+        text = richEditor.getText();
+    } else {
+        text = document.getElementById("note-content").value;
     }
-    
+
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    document.getElementById("word-count").textContent = words + "words";
-    document.getElementById("char-count").textContent = text.length + "charecters";
+    const characters = text.length;
+
+    document.getElementById("word-count").textContent = words + " words";
+    document.getElementById("char-count").textContent = characters + " characters";
 }
 
 function fillSample() {
