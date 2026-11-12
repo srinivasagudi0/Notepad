@@ -37,17 +37,20 @@
                     <option value="markdown">Markdown</option>
                     <option value="richtext">Rich Text</option>
                 </select>
-                <div id="find-replace">
+                <button id="fill-sample">Fill Sample</button>
+                <button id="showFR">Find & Replace</button>
+                <div id="find-replace" hidden>
                     <input id="find-text" placeholder="find-text">
                     <input id="replace-text" placeholder="replace-text">
 
                     <button id="find-button">Find</button>
                     <button id="replace-button">Replace</button>
                     <button id="replace-all-button">Replace All</button>
+                    <button id="hideFR">Hide Find & Replace</button>
                 </div>
             </div>
             <div id="action">
-                <button id="save-note" onclick="SaveCurrent()">Save</button>
+                <button id="save-note">Save</button>
                 <button id="delete-note">Delete</button>
                 <button id="note-pin">📌 Pin</button>
                 <button id="export-note">Export</button>
@@ -58,10 +61,11 @@
             <p id="char-count">0 charecters</p>
             <p id="save-status">Saved</p>
             </div>
+            <p id="footer">Made with love!</p>
         </main>
-        <script src="script.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
-        <script type="module" src="richtext.js"></script>
+        <script src="https://cdn.jsdelivr.net.npm/dompurify/dist/purify.min.js"></script>
+        <script type="module" src="script.js"></script>
+
     </body>
 </html>

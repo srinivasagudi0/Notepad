@@ -3,6 +3,7 @@ import StarterKit from "https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@3.31.3/
 
 let notes = [];
 let activeNoteId = null;
+let loadingDocument = false;
 const richEditor = new Editor({
     element: document.getElementById("rich-text-content"),
     extensions: [
@@ -12,11 +13,7 @@ const richEditor = new Editor({
 });
 
 function countWords() {
-    const text = document.getElementById("note-content").value;
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    document.getElementById("word-count").textContent = words + "words";
-    const charecters = text.length;
-    document.getElementById("char-count").textContent = charecters +" charecters";
+    updateDocumentStats();
     document.getElementById("save-status").textContent = "Not Saved";
 }
 
@@ -37,15 +34,9 @@ function parse() {
 }
 
 notes = parse();
-
 if (notes.length > 0) {
     activeNoteId = notes[0].id;
-    document.getElementById("editor-type").value = notes[0].contentFormat || "text";
-
-    document.getElementById("note-title").value = notes[0].title;
-    document.getElementById("note-content").value = notes[0].content;
-    countWords();
-    document.getElementById("save-status").textContent = "Saved";
+    loadNoteIntoEditors(notes[0]);
 }
 
 function SaveCurrent() {
@@ -53,9 +44,14 @@ function SaveCurrent() {
    if (!note) return;
 
    note.title = document.getElementById("note-title").value;
-   note.content = document.getElementById("note-content").value;
-   note.contentFormat = document.getElementById("editor-type").value;
-   note.updatedAt = new Date().toISOString();
+   const mode = note.contentFormat || "text";
+
+    if (mode === "richtext") {
+        note.content = richEditor.getHtml();
+    } else {
+        note.content = document.getElementById("note-content").value;
+    }
+    note.updatedAt = new Date().toISOString();
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
@@ -87,10 +83,9 @@ function CreateNote() {
     notes.push(note);
     activeNoteId = note.id;
 
-    document.getElementById("note-title").value = "";
-    document.getElementById("note-content").value = "";
+    loadNoteIntoEditors(note);
     countWords();
-
+    clearInterval(saveTimer);
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
@@ -98,21 +93,23 @@ function CreateNote() {
 
 function addElements(){
     // add elements based on what mode the editor is. In md and html it shows preview and nothing for text.
-    editorType = document.getElementById("editor-type").value;
-    const htmlPreview = document.getElementById("html-preview");
-    const markdownPreview = document.getElementById("markdown-preview");
-    if (editorType === "html") {
-        htmlPreview.hidden = false;
-        const content = document.getElementById("note-content").value;
-        htmlPreview.srcdoc = content;
-     } else if (editorType === "markdown") {
-        htmlPreview.hidden = true;
-        const content = document.getElementById("note-content").value;
-        markdownPreview.hidden = false;
-        markdownPreview.innerHTML = convertToMarkdown(content);
-    } else {
-        htmlPreview.hidden = true;
-        markdownPreview.hidden = true;
+    const mode = document.getElementById("editor-type").value;
+    const textarea = document.getElementById("note-content");
+    const rich = document.getElementById("rich-text-editor");
+    const html = document.getElementById("html-preview");
+    const markdown = document.getElementById("markdown-preview");
+
+    textarea.hidden = mode === "richtext";
+    rich.hidden = mode !== "richtext";
+    markdown.hidden = mode !== "markdown";
+    html.hidden = mode !== "html";
+
+    
+    if (mode === "html") {
+        html.srcdoc = textarea.value;
+    }
+    if (mode === "markdown") {
+        markdown.innerHTML = convertToMarkdown(textarea.value);
     }
 }
 
@@ -175,9 +172,9 @@ function openNote(id) {
 
     activeNoteId = note.id;
     document.getElementById("editor-type").value = note.contentFormat || "text";
-    document.getElementById("note-title").value = note.title;
-    document.getElementById("note-content").value = note.content;
+    loadNoteIntoEditors();
     countWords();
+    clearInterval(saveTimer);
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
 }
@@ -242,12 +239,25 @@ function allListeners() {
             event.preventDefault();
             document.getElementById("note-title").focus();
         }
+        document.getElementById("save-note").addEventListener("click", SaveCurrent);
 
+        richEditor.on("update", () => {
+            if (loadingDocument) return;
+            const note = notes.find(n => n.id === activeNoteId);
+            if (!note || note.contentFormat !== 'richtext') return;
+            updateDocumentStats();
+            document.getElementById("save-status").textContent = "Not Saved";
+            autoSave();
+        });
+        connectRichToolbar();
     });
 
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
+    document.getElementById("showFR").addEventListener('click', showFinder);
+    document.getElementById("hideFR").addEventListener('click', hideFinder);
+    
 }
 
 function deleteNote() {
@@ -287,10 +297,12 @@ function exportNotes() {
         alert("Note not found");
         return;
     }
-
-    const blob = new Blob([note.content], {
+    const textToExport = note.contentFormat === "richtext"
+        ? richEditor.getText()
+        : note.content;
+    const blob = new Blob([textToExport], {
         type: "text/plain;charset=utf-8"
-    })
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url
@@ -305,7 +317,7 @@ function exportNotes() {
 
     setTimeout(() => {
         URL.revokeObjectURL(url);
-    }, 1000);
+    }, 3000); // saving every 3 seconds instead of 1
 
 }   
 
@@ -355,6 +367,7 @@ function toggleWhite() {
         button.style.borderColor = "#e2e8f0";
     });
 }
+
 function toggleDark() {
     body = document.getElementById("page");
     body.style.backgroundColor = 'black';
@@ -382,6 +395,18 @@ function toggleDark() {
     stats = document.getElementById("note-stats")
     stats.style.color ="white";
 };
+
+const findElements = document.getElementById("find-replace");
+const showButtton = document.getElementById("showFR");
+function showFinder() {
+    findElements.hidden = false;
+    showButtton.hidden = true;
+}
+function hideFinder() {
+    findElements.hidden=true;
+    showButtton.hidden=false;
+
+}
 
 function toggleCyberpunk() {
     const body = document.getElementById("page");
@@ -526,7 +551,6 @@ function toggleChristmas() {
 
 let themeIndex = Number(localStorage.getItem("themeIndex")) || 0;
 const themes = [toggleWhite,toggleDark, toggleCyberpunk, toggleRetro, toggleChristmas];
-
 if (themeIndex < 0 || themeIndex >= themes.length) {
     themeIndex = 0;
 }
@@ -542,7 +566,6 @@ function ToggleTheme() {
 }
 
 let saveTimer;
-
 function autoSave() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -607,4 +630,91 @@ function replaceAllText() {
     autoSave();
 }
 
+function connectRichToolbar() {
+    const actions = {
+        "bold-button": () => richEditor.chain().focus().togglebold().run(),
+        "italic-button": () => richEditor.chain().focus().toggleItalic().run(),
+        "strike-button": () => richEditor.chain().focus().toggleStrike().run(),
+        "heading1": () => richEditor.chain().focus().toggleHeading({ level: 1 }).run(),
+        "heading2": () => richEditor.chain().focus().toggleHeading({ level: 2 }).run(),
+        "bulleted-list": () => richEditor.chain().focus().toggleBulletList().run(),
+        "numbered-list": () => richEditor.chain().focus().toggleOrderedList().run()
+    };
+    Object.entries(actions).forEach(([id, action]) => {
+        document.getElementById(id).addEventListener("click", action);
+    })
+}
+
+function loadNoteIntoEditors(note) {
+    document.getElementById("note-title").value = note.title;
+    document.getElementByIf("editor-type").value = note.contentFormat || "text";
+    if (note.contentFormat === "richtext") {
+        richEditor.commands.setContent(note.content || "<p></p>");
+        document.getElementById("note-content").value = "";
+    } else {
+        document.getElementById("note-content").value = note.content || "";
+        richEditor.commands.setContent("<p></p>");
+    }
+    addElements();
+    // updateDocumentStats();
+    document.getElementById("save-status").textContent = "Saved";
+}
+
+function updateDocumentStats() {
+    loadingDocument = true;
+    const note = notes.find(n => n.id === activeNoteId);
+    try {
+        if (note.contentFormat === "richtext") {
+            richEditor.commands.setContent(note.content || "<p></p>");
+            document.getElementById("note-content").value ="";
+        } else {
+            richEditor.commands.setContent("<p></p>");
+            document.getElementById('note-content').value = note.content || "";
+        } 
+    } finally {
+        loadingDocument=false;
+    }
+    
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    document.getElementById("word-count").textContent = words + "words";
+    document.getElementById("char-count").textContent = text.length + "charecters";
+}
+
+function fillSample() {
+    if (!activeNoteId) return;
+    const note = notes.find(n => n.id === activeNoteId);
+    const doc = document.getElementById("note-content").value;
+    const confirm = window.confirm("All of the text will be erased and replaced by sample.");
+
+    if (!confirm) return;
+
+    const mode = note.contentFormat || "text";
+    let placeholder;
+
+    if (mode === "html") {
+        placeholder = "<html></html>";
+    };
+    if (mode === "text") {
+        placeholder = "Hi! This a Notepad made by Srinivasa. It is smart and supports 4 formats('html', 'rich', 'markdown' and 'text'). Thanks for using this application."
+    } 
+    if (mode === "markdown") {
+        placeholder = "# Hello! "
+    }
+}
+
+function changeFooter() {
+    const footer = document.getElementById("footer");
+    // footer will be tips mostly (2-3 norm sentences)
+    tips = [
+        "There are four themes(white, dark, fantasy & christmas).",
+        "Made with love!",
+        "Pin moves the note to the top of list.",
+        "What you are reading are tips"
+    ]
+    tip = int(Math.random() * (tips.length))
+    footer.textContent = tip;
+}
+
 allListeners();
+
+// plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)

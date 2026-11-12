@@ -143,3 +143,68 @@ main {
 button {
     cursor: pointer;
 }
+
+[hidden] {
+    display: none !important;
+}
+
+#rich-text-editor {
+    width: 100%;
+    max-width: 900px;
+    margin: 12px auto;
+}
+
+#rich-text-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px 10px 0 0;
+    background: #eaf0f8;
+}
+
+#rich-text-toolbar button {
+    min-width: 36px;
+    padding: 8px 10px;
+    background: white;
+    color: #17243c;
+    border: 1px solid #b6c5d8;
+}
+
+#rich-text-content .tiptap {
+    min-height: 400px;
+    padding: 28px;
+    border: 1px solid #cbd5e1;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: #17243c;
+    color: #17243c;
+    font: 16px/1.9 system-ui, sans-serif;
+    overflow-wrap: anywhere;
+}
+
+#rich-text-toolbar button:hover,
+#rich-text-toolbar button:focus-visible {
+    background: #dbeafe;
+    outline: 2px solid #2563eb;
+}
+
+#rich-text-content .tiptap:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+}
+
+#rich-text-content .tiptap h1 { font-size: 2rem; }
+#rich-text-content .tipttap h2 { font-size: 1.5rem; }
+#rich-text-content .tiptap ul,
+#rich-text-content .tiptap ol { padding-left: 28px; }
+
+@media (max-width: 600px) {
+    #rich-text-content .tiptap { padding: 16px; }
+}
+
+#footer {
+    text-align: right;
+    margin: 0;
+}
