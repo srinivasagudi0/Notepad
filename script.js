@@ -111,6 +111,7 @@ function addElements(){
     if (mode === "markdown") {
         markdown.innerHTML = convertToMarkdown(textarea.value);
     }
+
 }
 
 function convertToMarkdown(content) {
@@ -194,6 +195,8 @@ function allListeners() {
 
         note.contentFormat = document.getElementById("editor-type").value;
         localStorage.setItem("notepad-notes", JSON.stringify(notes));
+        addElements();
+        updateDocumentStats();
     })
     document.getElementById("note-content").addEventListener("input", addElements);
     document.getElementById("note-title").addEventListener("input", autoSave);
@@ -251,13 +254,21 @@ function allListeners() {
         document.getElementById("save-status").textContent = "Not Saved";
         autoSave();
     });
-    connectRichToolbar();
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
     document.getElementById("showFR").addEventListener('click', showFinder);
     document.getElementById("hideFR").addEventListener('click', hideFinder);
-    
+    document.getElementById("save-note").addEventListener("click", SaveCurrent);
+    richEditor.on("update", () => {
+        if (loadingDocument) return;
+        const note = notes.find(n => n.id === activeNoteId);
+        if (!note || note.contentFormat !== 'richtext') return;
+        updateDocumentStats();
+        document.getElementById("save-status").textContent = "Not Saved";
+        autoSave();
+    });
+    connectRichToolbar();
 }
 
 function deleteNote() {

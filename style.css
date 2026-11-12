@@ -178,7 +178,7 @@ button {
     border: 1px solid #cbd5e1;
     border-top: none;
     border-radius: 0 0 10px 10px;
-    background: #17243c;
+    background: white;
     color: #17243c;
     font: 16px/1.9 system-ui, sans-serif;
     overflow-wrap: anywhere;
@@ -196,7 +196,7 @@ button {
 }
 
 #rich-text-content .tiptap h1 { font-size: 2rem; }
-#rich-text-content .tipttap h2 { font-size: 1.5rem; }
+#rich-text-content .tiptap h2 { font-size: 1.5rem; }
 #rich-text-content .tiptap ul,
 #rich-text-content .tiptap ol { padding-left: 28px; }
 
