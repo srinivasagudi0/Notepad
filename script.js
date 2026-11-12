@@ -172,7 +172,7 @@ function openNote(id) {
 
     activeNoteId = note.id;
     document.getElementById("editor-type").value = note.contentFormat || "text";
-    loadNoteIntoEditors();
+    loadNoteIntoEditors(note);
     countWords();
     clearInterval(saveTimer);
     document.getElementById("save-status").textContent = "Saved";
@@ -239,19 +239,19 @@ function allListeners() {
             event.preventDefault();
             document.getElementById("note-title").focus();
         }
-        document.getElementById("save-note").addEventListener("click", SaveCurrent);
-
-        richEditor.on("update", () => {
-            if (loadingDocument) return;
-            const note = notes.find(n => n.id === activeNoteId);
-            if (!note || note.contentFormat !== 'richtext') return;
-            updateDocumentStats();
-            document.getElementById("save-status").textContent = "Not Saved";
-            autoSave();
-        });
-        connectRichToolbar();
     });
 
+    document.getElementById("save-note").addEventListener("click", SaveCurrent);
+
+    richEditor.on("update", () => {
+        if (loadingDocument) return;
+        const note = notes.find(n => n.id === activeNoteId);
+        if (!note || note.contentFormat !== 'richtext') return;
+        updateDocumentStats();
+        document.getElementById("save-status").textContent = "Not Saved";
+        autoSave();
+    });
+    connectRichToolbar();
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
