@@ -47,7 +47,7 @@ function SaveCurrent() {
    const mode = note.contentFormat || "text";
 
     if (mode === "richtext") {
-        note.content = richEditor.getHtml();
+        note.content = richEditor.getHTML();
     } else {
         note.content = document.getElementById("note-content").value;
     }
@@ -242,18 +242,6 @@ function allListeners() {
             event.preventDefault();
             document.getElementById("note-title").focus();
         }
-    });
-
-    document.getElementById("save-note").addEventListener("click", SaveCurrent);
-
-    richEditor.on("update", () => {
-        if (loadingDocument) return;
-        const note = notes.find(n => n.id === activeNoteId);
-        if (!note || note.contentFormat !== 'richtext') return;
-        updateDocumentStats();
-        document.getElementById("save-status").textContent = "Not Saved";
-        autoSave();
-    });
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
@@ -643,7 +631,7 @@ function replaceAllText() {
 
 function connectRichToolbar() {
     const actions = {
-        "bold-button": () => richEditor.chain().focus().togglebold().run(),
+        "bold-button": () => richEditor.chain().focus().toggleBold().run(),
         "italic-button": () => richEditor.chain().focus().toggleItalic().run(),
         "strike-button": () => richEditor.chain().focus().toggleStrike().run(),
         "heading1": () => richEditor.chain().focus().toggleHeading({ level: 1 }).run(),
@@ -657,8 +645,9 @@ function connectRichToolbar() {
 }
 
 function loadNoteIntoEditors(note) {
+    if (!note) return;
     document.getElementById("note-title").value = note.title;
-    document.getElementByIf("editor-type").value = note.contentFormat || "text";
+    document.getElementById("editor-type").value = note.contentFormat || "text";
     if (note.contentFormat === "richtext") {
         richEditor.commands.setContent(note.content || "<p></p>");
         document.getElementById("note-content").value = "";
