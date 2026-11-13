@@ -619,6 +619,12 @@ if (themeIndex < 0 || themeIndex >= themes.length) {
 
 renderNotes();
 function ToggleTheme() {
+    const button = document.getElementById("theme-toggle");
+
+    button.classList.remove("theme-spinning");
+    void button.offsetWidth;
+    button.classList.add("theme-spinning");
+
     themeIndex++;
     if (themeIndex > 4) {
         themeIndex = 0;

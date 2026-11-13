@@ -234,3 +234,16 @@ button {
 .sample-animation {
     animation: sampleAppear 0.9s ease-out;
 }
+
+@keyframes themeSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.theme-spinning {
+    animation: themeSpin 0.5s ease-in-out;
+}
