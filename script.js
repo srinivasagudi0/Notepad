@@ -56,7 +56,7 @@ function SaveCurrent() {
     }
     note.updatedAt = new Date().toISOString();
     if (oldContent !== note.content || oldTitle !== note.title) {
-    saveVersion(note);
+    saveVersion(note, oldTitle, oldContent, oldMode);
     }
 
 
@@ -859,7 +859,7 @@ function rememberVersion(note) {
     localStorage.setItem("history:" + note.id, JSON.stringify(history.slice(-10)));
 }
 
-function saveVersion(note) {
+function saveVersion(note, oldTitle, oldContent, oldMode) {
    rememberVersion({
         id: note.id,
         title: oldTitle,
@@ -872,7 +872,7 @@ function saveVersion(note) {
 function restorePreviousVersion() {
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) {return;}
-    const history = getHistory();
+    const history = getHistory(note.id);
     if (!history.length) return alert("No previous versions.");
     const old = history[history.length - 1];
     if (!confirm("Restore previous version from " + old.savedAt + "?")) return;
