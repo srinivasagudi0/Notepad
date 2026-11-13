@@ -40,8 +40,11 @@ if (notes.length > 0) {
 }
 
 function SaveCurrent() {
-   const note = notes.find(n => n.id === activeNoteId);
-   if (!note) return;
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return;
+    const oldContent = note.content
+    const oldTitle = note.title;
+    const oldMode = note.contentFormat || "text"
 
    note.title = document.getElementById("note-title").value;
    const mode = note.contentFormat || "text";
@@ -52,6 +55,10 @@ function SaveCurrent() {
         note.content = document.getElementById("note-content").value;
     }
     note.updatedAt = new Date().toISOString();
+    if (oldContent !== note.content || oldTitle !== note.title) {
+    saveVersion(note);
+    }
+
 
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
@@ -853,20 +860,14 @@ function rememberVersion(note) {
 }
 
 function saveVersion(note) {
-    const oldContent = note.content
-    const oldTitle = note.title;
-    const oldMode = note.contentFormat || "text"
-
-    if (oldContent !== note.content || oldTitle !== note.title) {
-        rememberVersion({
-            id: note.id,
-            title: oldTitle,
-            content: oldContent,
-            contentFormat: oldMode
-        });
-        note.revision = (note.revision || 0) +1
+   rememberVersion({
+        id: note.id,
+        title: oldTitle,
+        content: oldContent,
+        contentFormat: oldMode
+    });
+    note.revision = (note.revision || 0) +1
     }
-}
 
 function restorePreviousVersion() {
     const note = notes.find(n => n.id === activeNoteId);
