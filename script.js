@@ -208,7 +208,7 @@ function allListeners() {
         const oldContent = oldMode === "richtext"
             ? richEditor.getHTML()
             : document.getElementById("note-content").value;
-        const nextContent = converContent(oldContent, oldMode, newMode);
+        const nextContent = converText(oldContent, oldMode, newMode);
 
         note.content = nextContent;
         note.contentFormat = newMode;
@@ -749,7 +749,7 @@ function fillSample() {
 function changeFooter() {
     const footer = document.getElementById("footer");
     // footer will be tips mostly (2-3 norm sentences)
-    tips = [
+    const tips = [
         "There are four themes(white, dark, fantasy & christmas).",
         "Made with love!",
         "Pin moves the note to the top of list.",
@@ -775,7 +775,7 @@ function plainTextFromHTML(html) {
     return holder.textContent || "";
 }
 
-function convertToMarkdown(content, oldMode, newMode) {
+function converText(content, oldMode, newMode) {
     // this is like a feature but sometimes be not liked by user, later I will make it so that they can choose to turn this on or off
     //check the setting later
 
@@ -783,7 +783,7 @@ function convertToMarkdown(content, oldMode, newMode) {
 
     if (newMode == "richtext") {
         if (oldMode === "markdown") {
-            return DOMPurify(marked.parse(content));
+            return DOMPurify.sanitize(marked.parse(content));
         }
         if (oldMode === 'html') {
             return DOMPurify.sanitize(content);
@@ -792,7 +792,7 @@ function convertToMarkdown(content, oldMode, newMode) {
     }
     if (oldMode === "html") return plainTextFromHTML(content);
     if (oldMode === "richtext") {
-        return newMode = "html" ? content : plainTextFromHTML(content)
+        return newMode === "html" ? content : plainTextFromHTML(content)
     }
     if (oldMode === "markdown") return content;
     return content;
@@ -812,7 +812,7 @@ function setEditorLink() {
             alert("Only http:// and https:// links are supported. ");
             return;
         }
-        richEditor.chain().focus().extendMarkRange("link").setLink({href: parsed.hredf}).run();
+        richEditor.chain().focus().extendMarkRange("link").setLink({href: parsed.href}).run();
     } catch {
         alert("Enter a valid URL.");
     }
@@ -849,7 +849,7 @@ function rememberVersion(note) {
         mode: note.contentFormat || "text",
         savedAt: new Date().toISOString()
     });
-    localStorage.setItem("history" + note.id, JSON.stringify(history.slice(-10)));
+    localStorage.setItem("versions:" + note.id, JSON.stringify(history.slice(-10)));
 }
 
 function saveVersion(note) {
