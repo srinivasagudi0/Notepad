@@ -1,5 +1,8 @@
-import { Editor } from "https://cdn.jsdelivr.net/npm/@tiptap/core@3.31.3/+esm";
-import StarterKit from "https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@3.31.3/+esm";
+import { Editor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import {marked} from "marked";
+import DOMPurify from "dompurify";
+
 
 let notes = [];
 let activeNoteId = null;
@@ -32,11 +35,18 @@ function parse() {
         return [saved];
     } catch (e) {
         console.error("Error parsing note data:", e);
-        return [];;
+        return [];
     }
 }
 
 notes = parse();
+notes = notes.filter(note => note && note.id).map(note => ({
+    ...note,
+    title: note.title || "",
+    content: note.content || "",
+    contentFormat: note.contentFormat || "text",
+    pinned: Boolean(note.pinned)
+}));
 if (notes.length > 0) {
     activeNoteId = notes[0].id;
     loadNoteIntoEditors(notes[0]);
@@ -120,6 +130,11 @@ function addElements(){
 
     if (mode === "html") {
         html.srcdoc = textarea.value;
+        if (html.contentDocument) {
+            html.contentDocument.open();
+            html.contentDocument.write(textarea.value || "");
+            html.contentDocument.close();
+        }
     }
     if (mode === "markdown") {
         markdown.innerHTML = convertToMarkdown(textarea.value);
@@ -220,6 +235,8 @@ function allListeners() {
             ? richEditor.getHTML()
             : document.getElementById("note-content").value;
         const nextContent = converText(oldContent, oldMode, newMode);
+
+        saveVersion(note, note.title, oldContent, oldMode);
 
         note.content = nextContent;
         note.contentFormat = newMode;
@@ -738,7 +755,7 @@ function fillSample() {
     let placeholder;
 
     if (mode === "html") {
-        placeholder = "<h1>HTML</h1><p>HTML preview works</p> <ul>To Do: <li>Steal the Moon</li> <li><Make an arc Reactor/li> <li>Make <strong>J.A.R.V.I.S</strong></li> </ul>";
+        placeholder = "<h1>HTML</h1><p>HTML preview works</p><ul><li>Steal the Moon</li><li>Make an arc Reactor</li><li>Make <strong>J.A.R.V.I.S</strong></li></ul>";
         doc.value = placeholder;
     };
     if (mode === "text") {
@@ -801,6 +818,9 @@ function converText(content, oldMode, newMode) {
             return DOMPurify.sanitize(content);
         }
         return "<p>" + escapeHTML(content).replace(/\n/g, "<br>") + "</p>";
+    }
+    if (newMode === "html" && oldMode === "markdown") {
+        return DOMPurify.sanitize(marked.parse(content));
     }
     if (oldMode === "html") return plainTextFromHTML(content);
     if (oldMode === "richtext") {
