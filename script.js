@@ -454,8 +454,25 @@ function toggleDark() {
     actions.forEach(button => {
         button.style.borderColor="white";
     });
+
     const stats = document.getElementById("note-stats")
     stats.style.color ="white";
+
+    const markdown = document.getElementById("markdown-preview");
+    markdown.style.backgroundColor = "#1e293b";
+    markdown.style.color = "#f8fafc";
+
+    const html = document.getElementById("html-preview");
+    html.style.backgroundColor = "#1e293b";
+    html.style.color = "#f8fafc";
+    html.style.borderColor = "#475569";
+
+    const rich = document.getElementById("rich-text-editor .tiptap");
+    if (rich) {
+        rich.style.backgroundColor = "#1e293b";
+        rich.style.color = "#f8fafc";
+        rich.style.borderColor = "#475569";
+    }
 };
 
 const findElements = document.getElementById("find-replace");

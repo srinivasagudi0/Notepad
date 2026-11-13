@@ -247,3 +247,8 @@ button {
 .theme-spinning {
     animation: themeSpin 0.5s ease-in-out;
 }
+
+body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-content .tiptap, #markdown-preview, #html-preview {
+    transition: background-color 0.9s ease, color 0.6s ease, border-color 0.3s ease, box-shadow 0.1s ease;
+}
+
