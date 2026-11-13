@@ -104,7 +104,10 @@ function addElements(){
     markdown.hidden = mode !== "markdown";
     html.hidden = mode !== "html";
 
-    
+    const isRich = mode === "richtext";
+    document.getElementById("showFR").hidden = isRich;
+    if (isRich) document.getElementById("find-replace").hidden = true;
+
     if (mode === "html") {
         html.srcdoc = textarea.value;
     }
@@ -164,19 +167,14 @@ function renderNotes() {
 }
 
 function openNote(id) {
+    clearTimeout(saveTimer);
     if (activeNoteId) {
         SaveCurrent();
     }
-
     const note = notes.find(n => n.id === id);
     if (!note) return;
-
     activeNoteId = note.id;
-    document.getElementById("editor-type").value = note.contentFormat || "text";
     loadNoteIntoEditors(note);
-    countWords();
-    clearInterval(saveTimer);
-    document.getElementById("save-status").textContent = "Saved";
     renderNotes();
 }
 
@@ -192,27 +190,34 @@ function allListeners() {
     
 
     const editorTypeSelect = document.getElementById("editor-type");
-    let previousMode = editorTypeSelect.value;
+    // let previousMode = editorTypeSelect.value;
     editorTypeSelect.addEventListener("change", () => {
         const note = notes.find(n => n.id === activeNoteId);
+        const select = document.getElementById("editor-type");
         if (!note) return;
 
         const newMode = editorTypeSelect.value;
         const oldMode = note.contentFormat || "text";
-        if (newMode === oldMode) return;
-        let content;
-
-        if (oldMode === "richtext") {
-            content = richEditor.getHTML();
-        } else {
-            content = document.getElementById('note-content').value;
+        
+        const richToPlain = oldMode === "richtext" && (newMode === "text" || newMode==="markdown");
+        if (richToPlain && !confirm("Formatting will be lost. Continue?")) {
+            select.value = oldMode;
+            return;
         }
 
-        if (newMode === "richtext" && oldMode !== "richtext") {
-            richEditor.commands.setContent(content);
-            document.getElementById('note-content').value = "";
-        }
-    })
+        const oldContent = oldMode === "richtext"
+            ? richEditor.getHTML()
+            : document.getElementById("note-content").value;
+        const nextContent = converContent(oldContent, oldMode, newMode);
+
+        note.content = nextContent;
+        note.contentFormat = newMode;
+        note.updatedAt = new Date().toISOString();
+        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+
+        loadNoteIntoEditors(note);
+        renderNotes();
+    });
 
     document.getElementById("note-content").addEventListener("input", addElements);
     document.getElementById("note-title").addEventListener("input", autoSave);
@@ -273,21 +278,35 @@ function allListeners() {
         autoSave();
     });
     connectRichToolbar();
+    richEditor.on("selectionUpdate", refreshToolbarState);
+    richEditor.on("update", refreshToolbarState);
+    document.getElementById('fill-sample').addEventListener('click', fillSample);
 }
 
 function deleteNote() {
+    if (!activeNoteId) return;
     const confirm = window.confirm("Are you sure you want to delete this note?");
     if (!confirm) return;
     const noteID = notes.find(n => n.id === activeNoteId);
-
     if (!noteID) return;
+
     notes = notes.filter(n => n.id !== activeNoteId);
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     activeNoteId = null;
-    document.getElementById("note-title").value = "";
-    document.getElementById("note-content").value = "";
-    countWords();
-    document.getElementById("save-status").textContent = "Deleted";
+    if (notes.length) {
+        activeNoteId = notes[0].id;
+        loadNoteIntoEditors(notes[0]);
+    } else {
+        loadingDocument=true;
+        document.getElementById("note-title").value = "";
+        document.getElementById("note-content").value = "";
+        document.getElementById("editor-type").value = "text";
+        richEditor.commands.clearContent();
+        loadingDocument=false;
+        addElements();
+        updateDocumentStats();
+        document.getElementById("save-status").textContent = "Deleted";
+    }
     renderNotes();
 }
 
@@ -332,9 +351,8 @@ function exportNotes() {
 
     setTimeout(() => {
         URL.revokeObjectURL(url);
-    }, 3000); // saving every 3 seconds instead of 1
-
-}   
+    }, 1000)
+}
 
 function toggleWhite() {
     const body = document.getElementById("page");
@@ -585,7 +603,9 @@ function autoSave() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
         SaveCurrent();
-    }, 1000)
+    }, 3000)
+    // change footer too 
+    changeFooter();
 }
 
 function findText() {
@@ -653,7 +673,9 @@ function connectRichToolbar() {
         "heading1": () => richEditor.chain().focus().toggleHeading({ level: 1 }).run(),
         "heading2": () => richEditor.chain().focus().toggleHeading({ level: 2 }).run(),
         "bulleted-list": () => richEditor.chain().focus().toggleBulletList().run(),
-        "numbered-list": () => richEditor.chain().focus().toggleOrderedList().run()
+        "numbered-list": () => richEditor.chain().focus().toggleOrderedList().run(),
+        "underline-button": () => richEditor.chain().focus().toggleUnderline().run(),
+        "link-button": () => setEditorLink()
     };
     Object.entries(actions).forEach(([id, action]) => {
         document.getElementById(id).addEventListener("click", action);
@@ -664,27 +686,26 @@ function loadNoteIntoEditors(note) {
     if (!note) return;
     document.getElementById("note-title").value = note.title;
     document.getElementById("editor-type").value = note.contentFormat || "text";
-    if (note.contentFormat === "richtext") {
-        richEditor.commands.setContent(note.content || "<p></p>");
-        document.getElementById("note-content").value = "";
-    } else {
-        document.getElementById("note-content").value = note.content || "";
-        richEditor.commands.setContent("<p></p>");
+    loadingDocument = true;
+    try {
+        if (note.contentFormat === "richtext") {
+            richEditor.commands.setContent(note.content || "<p></p>");
+            document.getElementById("note-content").value = "";
+        } else {
+            document.getElementById("note-content").value = note.content || "";
+            richEditor.commands.setContent("<p></p>");
+        }
+        addElements();
+        updateDocumentStats();
+        document.getElementById("save-status").textContent = "Saved";
+    } finally {
+        loadingDocument = false;
     }
-    addElements();
-    // updateDocumentStats();
-    document.getElementById("save-status").textContent = "Saved";
 }
 
 function updateDocumentStats() {
     const mode = document.getElementById("editor-type").value;
-    let text = "";
-
-    if (mode === "richtext") {
-        text = richEditor.getText();
-    } else {
-        text = document.getElementById("note-content").value;
-    }
+    let text = mode === "richtext" ? richEditor.getText() : document.getElementById("note-content").value;
 
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const characters = text.length;
@@ -696,7 +717,7 @@ function updateDocumentStats() {
 function fillSample() {
     if (!activeNoteId) return;
     const note = notes.find(n => n.id === activeNoteId);
-    const doc = document.getElementById("note-content").value;
+    const doc = document.getElementById("note-content");
     const confirm = window.confirm("All of the text will be erased and replaced by sample.");
 
     if (!confirm) return;
@@ -705,14 +726,24 @@ function fillSample() {
     let placeholder;
 
     if (mode === "html") {
-        placeholder = "<html></html>";
+        placeholder = "<h1>HTML</h1><p>HTML preview works</p> <ul>To Do: <li>Steal the Moon</li> <li><Make an arc Reactor/li> <li>Make <strong>J.A.R.V.I.S</strong></li> </ul>";
+        doc.value = placeholder;
     };
     if (mode === "text") {
-        placeholder = "Hi! This a Notepad made by Srinivasa. It is smart and supports 4 formats('html', 'rich', 'markdown' and 'text'). Thanks for using this application."
+        placeholder = "Hi!\nThis a Notepad made by Srinivasa. It is smart and supports 4 formats('html', 'rich', 'markdown' and 'text').\n\nThanks for using this application.";
+        doc.value = placeholder;
     } 
     if (mode === "markdown") {
-        placeholder = "# Hello! "
+        placeholder = "# Hello!\n\nMarkdown is supported and will work as a daily markdown editor." // will later replace this with actual readme of the notepad.  
+        doc.value = placeholder;
     }
+    if (mode === "richtext") {
+        richEditor.commands.setContent("<h1>Example</h1><p>This is <strong>rich text</strong>.</p>");
+    }
+    addElements();
+    updateDocumentStats();
+    document.getElementById("save-status").textContent = "Not Saved";
+    autoSave();
 }
 
 function changeFooter() {
@@ -722,12 +753,137 @@ function changeFooter() {
         "There are four themes(white, dark, fantasy & christmas).",
         "Made with love!",
         "Pin moves the note to the top of list.",
-        "What you are reading are tips"
+        "What you are reading are tips",
+        "Pin important notes to the top.",
+        "Use Cmd/Ctrl + S to save.",
+        "Rich Text keeps formatting when saved."
     ]
-    tip = int(Math.random() * (tips.length))
-    footer.textContent = tip;
+    const index = Math.floor(Math.random() * tips.length);
+    footer.textContent = tips[index];
 }
 
-allListeners();
+function escapeHTML(text) {
+    return text.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function plainTextFromHTML(html) {
+    const holder = document.createElement("div");
+    holder.innerHTML = DOMPurify.sanitize(html);
+    return holder.textContent || "";
+}
+
+function convertToMarkdown(content, oldMode, newMode) {
+    // this is like a feature but sometimes be not liked by user, later I will make it so that they can choose to turn this on or off
+    //check the setting later
+
+    if (oldMode === newMode) return;
+
+    if (newMode == "richtext") {
+        if (oldMode === "markdown") {
+            return DOMPurify(marked.parse(content));
+        }
+        if (oldMode === 'html') {
+            return DOMPurify.sanitize(content);
+        }
+        return "<p>" + escapeHTML(content).replace(/\n/g, "<br>") + "</p>";
+    }
+    if (oldMode === "html") return plainTextFromHTML(content);
+    if (oldMode === "richtext") {
+        return newMode = "html" ? content : plainTextFromHTML(content)
+    }
+    if (oldMode === "markdown") return content;
+    return content;
+}
+
+function setEditorLink() {
+    const existing = richEditor.getAttributes("link").href || "";
+    const raw = prompt("Enter an HTTPS or HTTP URL",existing);
+    if (raw === null) return;
+    if (!raw.trim()) {
+        richEditor.chain().focus().unsetLink().run();
+        return;
+    }
+    try {
+        const parsed = new URL(raw.trim());
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+            alert("Only http:// and https:// links are supported. ");
+            return;
+        }
+        richEditor.chain().focus().extendMarkRange("link").setLink({href: parsed.hredf}).run();
+    } catch {
+        alert("Enter a valid URL.");
+    }
+}
+
+function refreshToolbarState() {
+    const states = {
+        "bold-button": richEditor.isActive("bold"),
+        "italic-button": richEditor.isActive("italic"),
+        "underline-button": richEditor.isActive("underline"),
+        "heading1": richEditor.isActive("heading", {level:1}),
+        "heading2": richEditor.isActive("heading", {level:2})
+    };
+    Object.entries(states).forEach(([id, active]) => {
+        document.getElementById(id).classList.toggle("active-tool", active);
+    });
+}
+
+function getHistory(noteId) {
+    try {
+        return JSON.parse(localStorage.getItem("history:" + noteId) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function rememberVersion(note) {
+    const history = getHistory(note.id);
+    const last = history[history.length - 1];
+    if (last && last.content === note.content && last.title === note.title) return;
+    history.push({
+        title: note.title,
+        content: note.content,
+        mode: note.contentFormat || "text",
+        savedAt: new Date().toISOString()
+    });
+    localStorage.setItem("history" + note.id, JSON.stringify(history.slice(-10)));
+}
+
+function saveVersion(note) {
+    const oldContent = note.content
+    const oldTitle = note.title;
+    const oldMode = note.contentFormat || "text"
+
+    if (oldContent !== note.content || oldTitle !== note.title) {
+        rememberVersion({
+            id: note.id,
+            title: oldTitle,
+            content: oldContent,
+            contentFormat: oldMode
+        });
+        note.revision = (note.revision || 0) +1
+    }
+}
+
+function restorePreviousVersion() {
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) {return;}
+    const history = getHistory();
+    if (!history.length) return alert("No previous versions.");
+    const old = history[history.length - 1];
+    if (!confirm("Restore previous version from " + old.savedAt + "?")) return;
+    clearTimeout(saveTimer);
+    rememberVersion(note);
+    note.title = old.title;
+    note.content = old.content;
+    note.contentFormat = old.mode;
+    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    renderNotes();
+}
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
+
+allListeners();

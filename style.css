@@ -208,3 +208,8 @@ button {
     text-align: right;
     margin: 0;
 }
+#rich-text-toolbar button.active-tool {
+    background: #bfdbfe;
+    border-color: #2563eb;
+    font-weight: bold;
+}
