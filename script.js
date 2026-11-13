@@ -189,15 +189,31 @@ function allListeners() {
     document.getElementById("export-note").addEventListener("click", exportNotes);  
     document.getElementById('new-note').addEventListener('click', CreateNote);
     document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
-    document.getElementById("editor-type").addEventListener('change', () => {
+    
+
+    const editorTypeSelect = document.getElementById("editor-type");
+    let previousMode = editorTypeSelect.value;
+    editorTypeSelect.addEventListener("change", () => {
         const note = notes.find(n => n.id === activeNoteId);
         if (!note) return;
 
-        note.contentFormat = document.getElementById("editor-type").value;
-        localStorage.setItem("notepad-notes", JSON.stringify(notes));
-        addElements();
-        updateDocumentStats();
+        const newMode = editorTypeSelect.value;
+        const oldMode = note.contentFormat || "text";
+        if (newMode === oldMode) return;
+        let content;
+
+        if (oldMode === "richtext") {
+            content = richEditor.getHTML();
+        } else {
+            content = document.getElementById('note-content').value;
+        }
+
+        if (newMode === "richtext" && oldMode !== "richtext") {
+            richEditor.commands.setContent(content);
+            document.getElementById('note-content').value = "";
+        }
     })
+
     document.getElementById("note-content").addEventListener("input", addElements);
     document.getElementById("note-title").addEventListener("input", autoSave);
     document.getElementById("note-content").addEventListener("input", autoSave);
@@ -241,7 +257,7 @@ function allListeners() {
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "m") {
             event.preventDefault();
             document.getElementById("note-title").focus();
-        }
+        }});
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
