@@ -879,14 +879,18 @@ function restorePreviousVersion() {
     const old = history[history.length - 1];
     if (!confirm("Restore previous version from " + old.savedAt + "?")) return;
     clearTimeout(saveTimer);
+    history.pop()
     rememberVersion(note);
+    localStorage.setItem("history:" + note.id, JSON.stringify(history));
     note.title = old.title;
     note.content = old.content;
     note.contentFormat = old.mode;
+    note.revision = (note.revision || 0) + 1;
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     loadNoteIntoEditors(note);
-    document.getElementById("save-status").textContent = "Restored previous version";
     renderNotes();
+    document.getElementById("save-status").textContent = "Restored";
+    
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
