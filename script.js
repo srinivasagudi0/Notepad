@@ -7,7 +7,10 @@ let loadingDocument = false;
 const richEditor = new Editor({
     element: document.getElementById("rich-text-content"),
     extensions: [
-        StarterKit
+        StarterKit.configure({
+            gapcursor: false,
+            dropcursor: false,
+        })
     ],
     content: "<p>Start writing your note here...</p>"
 });
@@ -890,7 +893,6 @@ function restorePreviousVersion() {
     loadNoteIntoEditors(note);
     renderNotes();
     document.getElementById("save-status").textContent = "Restored";
-    
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
