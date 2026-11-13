@@ -402,22 +402,22 @@ function toggleWhite() {
 }
 
 function toggleDark() {
-    body = document.getElementById("page");
+    const body = document.getElementById("page");
     body.style.backgroundColor = 'black';
-    title = document.getElementById("title")
+    const title = document.getElementById("title")
     title.style.color = 'white';
-    newNote = document.getElementById("new-note");
+    const newNote = document.getElementById("new-note");
     newNote.style.backgroundColor ='black';
     newNote.style.borderColor='white'
     newNote.style.color = 'white';
-    search = document.getElementById("search-notes")
+    const search = document.getElementById("search-notes")
     search.style.backgroundColor = "black";
     search.style.color = "white";
-    noteTitle = document.getElementById("note-title");
+    const noteTitle = document.getElementById("note-title");
     noteTitle.style.backgroundColor = "black";
     noteTitle.style.marginBottom = "5px";
     noteTitle.style.borderColor ="green";
-    noteContent = document.getElementById("note-content");
+    const noteContent = document.getElementById("note-content");
     noteContent.style.backgroundColor="black";
     noteContent.style.color ="white";
     noteContent.style.marginBottom = "10px";
@@ -425,7 +425,7 @@ function toggleDark() {
     actions.forEach(button => {
         button.style.borderColor="white";
     });
-    stats = document.getElementById("note-stats")
+    const stats = document.getElementById("note-stats")
     stats.style.color ="white";
 };
 
