@@ -213,3 +213,24 @@ button {
     border-color: #2563eb;
     font-weight: bold;
 }
+
+@keyframes sampleAppear {
+    0% {
+        opacity: 0.4;
+        transform: translateY(8px);
+        box-shadow: 0 0 0 transparent;
+    }
+    50% {
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        box-shadow: 0 0 0 transparent;
+    }
+}
+
+.sample-animation {
+    animation: sampleAppear 0.9s ease-out;
+}

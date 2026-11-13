@@ -773,6 +773,7 @@ function fillSample() {
     updateDocumentStats();
     document.getElementById("save-status").textContent = "Not Saved";
     autoSave();
+    animateSample();
 }
 
 function changeFooter() {
@@ -913,6 +914,16 @@ function restorePreviousVersion() {
     loadNoteIntoEditors(note);
     renderNotes();
     document.getElementById("save-status").textContent = "Restored";
+}
+
+function animateSample() {
+    const mode = document.getElementById("editor-type").value;
+
+    const target = mode === "richtext" ? document.getElementById("rich-text-content") : document.getElementById("note-content");
+    if (!target) return;
+    target.classList.remove("sample-animation");
+    void target.offsetWidth;
+    target.classList.add("sample-animation");
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
