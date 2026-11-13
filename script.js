@@ -779,7 +779,7 @@ function converText(content, oldMode, newMode) {
     // this is like a feature but sometimes be not liked by user, later I will make it so that they can choose to turn this on or off
     //check the setting later
 
-    if (oldMode === newMode) return;
+    if (oldMode === newMode) return content;
 
     if (newMode == "richtext") {
         if (oldMode === "markdown") {
@@ -849,7 +849,7 @@ function rememberVersion(note) {
         mode: note.contentFormat || "text",
         savedAt: new Date().toISOString()
     });
-    localStorage.setItem("versions:" + note.id, JSON.stringify(history.slice(-10)));
+    localStorage.setItem("history:" + note.id, JSON.stringify(history.slice(-10)));
 }
 
 function saveVersion(note) {
