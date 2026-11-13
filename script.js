@@ -111,6 +111,17 @@ function CreateNote() {
     renderNotes();
 }
 
+function animateEditorChange() {
+    const mode = document.getElementById("editor-type").value;
+
+    const target = mode === "richtext" ? document.getElementById("rich-text-editor") : mode === "html"? document.getElementById("html-preview") : mode === "markdown" ? document.getElementById("markdown-preview") : document.getElementById("note-content");
+    if (!target) return;
+
+    target.classList.remove("editor-enter");
+    void target.offsetWidth;
+    target.classList.add("editor-enter");
+}
+
 function addElements(){
     // add elements based on what mode the editor is. In md and html it shows preview and nothing for text.
     const mode = document.getElementById("editor-type").value;
@@ -245,6 +256,7 @@ function allListeners() {
 
         loadNoteIntoEditors(note);
         renderNotes();
+        animateEditorChange();
     });
 
     document.getElementById("note-content").addEventListener("input", addElements);
