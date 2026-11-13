@@ -194,6 +194,7 @@ function allListeners() {
     document.getElementById("export-note").addEventListener("click", exportNotes);  
     document.getElementById('new-note').addEventListener('click', CreateNote);
     document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
+    document.getElementById("restore-note").addEventListener("click", restorePreviousVersion);
     
 
     const editorTypeSelect = document.getElementById("editor-type");
@@ -315,6 +316,7 @@ function deleteNote() {
         document.getElementById("save-status").textContent = "Deleted";
     }
     renderNotes();
+    clearInterval(saveTimer);
 }
 
 function pinNote() {
@@ -882,6 +884,8 @@ function restorePreviousVersion() {
     note.content = old.content;
     note.contentFormat = old.mode;
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    loadNoteIntoEditors(note);
+    document.getElementById("save-status").textContent = "Restored previous version";
     renderNotes();
 }
 
