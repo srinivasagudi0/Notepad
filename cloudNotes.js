@@ -4,8 +4,7 @@ export async function saveCloudNotes(note) {
     const { data: {user}, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-        console.error("User not authenticated:", authError);
-        return;
+        throw new Error("User not authenticated");
     }
 
     const { data, error } = await supabase.from('notes').insert({

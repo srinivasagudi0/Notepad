@@ -80,7 +80,8 @@ async function SaveCurrent() {
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
     try {
-        await saveCloudNotes(note);
+        await syncNoteToCloud(note);
+        showActivity("Note Synced to Cloud!");
     } catch (error) {
         console.error("Error saving note to cloud:", error);
         showActivity("Cloud Sync Failed");
@@ -1228,6 +1229,11 @@ async function syncNoteToCloud(note) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return;
+
+    if (note.ownerId && note.ownerId !== user.id) {
+        showActivity("Note owner mismatch. Cannot sync to cloud.");
+        return;
+    }
 
     if (note.cloudId) {
         await updateCloudNotes(note.cloudId, note);
