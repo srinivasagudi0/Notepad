@@ -70,6 +70,7 @@ function SaveCurrent() {
     note.updatedAt = new Date().toISOString();
     if (oldContent !== note.content || oldTitle !== note.title) {
     saveVersion(note, oldTitle, oldContent, oldMode);
+    showActivity("Note Saved");
     }
 
 
@@ -109,6 +110,7 @@ function CreateNote() {
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
+    showActivity("New Note Created!");
 }
 
 function animateEditorChange() {
@@ -210,8 +212,10 @@ function openNote(id) {
     const note = notes.find(n => n.id === id);
     if (!note) return;
     activeNoteId = note.id;
+    tile = note.title || "Untitled";
     loadNoteIntoEditors(note);
     renderNotes();
+    showActivity("Opened note: " + tile);
 }
 
 function allListeners() {
@@ -257,6 +261,7 @@ function allListeners() {
         loadNoteIntoEditors(note);
         renderNotes();
         animateEditorChange();
+        showActivity("Editor mode changed to " + newMode);
     });
 
     document.getElementById("note-content").addEventListener("input", addElements);
@@ -266,42 +271,51 @@ function allListeners() {
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
             event.preventDefault();
             SaveCurrent();
+            showActivity("Note Saved!");
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
             event.preventDefault();
             document.getElementById("search-notes").focus();
+            showActivity("Search Notes Focused!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "n") {
             event.preventDefault();
             CreateNote();
+            showActivity("New Note Created!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
             event.preventDefault();
             exportNotes();
+            showActivity("Note Exported!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
             event.preventDefault();
             deleteNote();
+            showActivity("Note Deleted!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
             event.preventDefault();
             pinNote();
+            showActivity("Note Pinned/Unpinned!");
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "t") {
             event.preventDefault();
             ToggleTheme();
+            showActivity("Theme Changed!");
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "h") {
             event.preventDefault();
             document.getElementById("note-content").focus();
+            showActivity("Note Content Focused!");
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "m") {
             event.preventDefault();
             document.getElementById("note-title").focus();
+            showActivity("Note Title Focused!");
         }});
     document.getElementById("find-button").addEventListener("click", findText);
     document.getElementById("replace-button").addEventListener("click", replaceText);
@@ -316,6 +330,7 @@ function allListeners() {
         updateDocumentStats();
         document.getElementById("save-status").textContent = "Not Saved";
         autoSave();
+        showActivity("Rich Text Updated!");
     });
     connectRichToolbar();
     richEditor.on("selectionUpdate", refreshToolbarState);
@@ -349,6 +364,7 @@ function deleteNote() {
     }
     renderNotes();
     clearInterval(saveTimer);
+    showActivity("Note Deleted!");
 }
 
 function pinNote() {
@@ -358,6 +374,7 @@ function pinNote() {
     note.pinned = !note.pinned;
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     renderNotes();
+    showActivity(note.pinned ? "Note Pinned!" : "Note Unpinned!");
 }
 
 function exportNotes() {
@@ -389,7 +406,7 @@ function exportNotes() {
     a.click();
     a.remove()
     window.open(url, "_blank");
-
+    showActivity("Note Exported!");
     setTimeout(() => {
         URL.revokeObjectURL(url);
     }, 1000)
@@ -660,6 +677,22 @@ function ToggleTheme() {
     }
     themes[themeIndex]();
     localStorage.setItem("themeIndex", themeIndex); 
+    showActivity("Theme Changed to " + (themeIndex + 1) + "!");
+}
+
+let islandTimer;
+
+function showActivity(message) {
+    const button = document.getElementById("save-note");
+
+    clearTimeout(islandTimer);
+
+    button.classList.add("save-expanded");
+    button.textContent = message;
+    islandTimer = setTimeout(() => {
+        button.classList.remove("save-expanded");
+        button.textContent = "💾 Save";
+    }, 1000); // will make it so that it shows for 1 second and then goes back to normal
 }
 
 let saveTimer;
@@ -710,6 +743,7 @@ function replaceText() {
     } else {
         alert("Text not found");
     }
+    showActivity("Replaced first occurrence of text!");
 }
 
 function replaceAllText() {
@@ -727,6 +761,7 @@ function replaceAllText() {
     addElements();
     countWords();
     autoSave();
+    showActivity("Replaced all occurrences of text!");
 }
 
 function connectRichToolbar() {
@@ -808,6 +843,7 @@ function fillSample() {
     updateDocumentStats();
     document.getElementById("save-status").textContent = "Not Saved";
     autoSave();
+    showActivity("Sample Text Added!");
     animateSample();
 }
 
@@ -949,6 +985,7 @@ function restorePreviousVersion() {
     loadNoteIntoEditors(note);
     renderNotes();
     document.getElementById("save-status").textContent = "Restored";
+    showActivity("Restored previous version!");
 }
 
 function animateSample() {

@@ -313,7 +313,12 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
 }
 
 #save-note.save-expanded {
-    min-width: 160px;
+    min-width: 190px;
     box-shadow: 0 0 20px rgba(52, 211, 153, 0.25);
 }
 
+#save-note {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: min-width 0.9s ease, transform 0.9s ease, box-shadow 0.9s ease, padding 0.9s ease;
+}
