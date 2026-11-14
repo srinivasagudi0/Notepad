@@ -341,6 +341,9 @@ function allListeners() {
     richEditor.on("selectionUpdate", refreshToolbarState);
     richEditor.on("update", refreshToolbarState);
     document.getElementById('fill-sample').addEventListener('click', fillSample);
+    document.getElementById("signup-btn").addEventListener("click", signUp);
+    document.getElementById("login-btn").addEventListener("click", logIn);
+    document.getElementById("logout-btn").addEventListener("click", logOut);
 }
 
 function deleteNote() {
@@ -1165,6 +1168,16 @@ async function logIn() {
         return;
     }
     showActivity("Logged in sucessfully!");
+}
+
+async function logOut() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+        showActivity(error.message);
+        return;
+    }
+    showActivity("Logged out!");
 }
 
 
