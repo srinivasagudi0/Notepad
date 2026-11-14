@@ -21,6 +21,15 @@ export async function saveCloudNotes(note) {
     return data;
 }
 
-export async function getCloudNotes() {
-    //pass
+export async function updateCloudNotes(cloudId, note) {
+    const {data, error} = await supabase.from('notes').update({
+        title: note.title,
+        content: note.content,
+        content_format: note.contentFormat,
+    }).eq('id', cloudId).select().single();
+
+    if (error) {
+        throw error;
+    }
+    return data;
 }

@@ -3,7 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import {marked} from "marked";
 import DOMPurify from "dompurify";
 import { supabase } from "./supabase.js";
-import { saveCloudNotes } from "./cloudNotes.js";
+import { saveCloudNotes, updateCloudNotes } from "./cloudNotes.js";
 
 
 let notes = [];
@@ -54,7 +54,7 @@ if (notes.length > 0) {
     loadNoteIntoEditors(notes[0]);
 }
 
-function SaveCurrent() {
+async function SaveCurrent() {
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
     const oldContent = note.content
@@ -79,6 +79,12 @@ function SaveCurrent() {
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
+    try {
+        await saveCloudNotes(note);
+    } catch (error) {
+        console.error("Error saving note to cloud:", error);
+        showActivity("Cloud Sync Failed");
+    }
 }
 
 function CreateNote() {
@@ -1215,6 +1221,21 @@ async function testCloudSave() {
     } catch (error) {
         console.error("Cloud save failed:", error);
         showActivity("Cloud save failed: " + error.message);
+    }
+}
+
+async function syncNoteToCloud(note) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    if (note.cloudId) {
+        await updateCloudNotes(note.cloudId, note);
+    } else {
+        const saved = await saveCloudNotes(note);
+        note.cloudId = saved.id;
+
+        localStorage.setItem("notepad-notes", JSON.stringify(notes));
     }
 }
 
