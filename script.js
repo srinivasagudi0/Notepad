@@ -2,6 +2,7 @@ import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import {marked} from "marked";
 import DOMPurify from "dompurify";
+import { supabase } from "./supabase.js";
 
 
 let notes = [];
