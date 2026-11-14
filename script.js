@@ -1221,3 +1221,4 @@ async function testCloudSave() {
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
 allListeners();
+document.getElementById("test-cloud-save").addEventListener("click", testCloudSave);
