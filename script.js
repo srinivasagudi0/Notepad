@@ -228,7 +228,9 @@ function allListeners() {
     document.getElementById('new-note').addEventListener('click', CreateNote);
     document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
     document.getElementById("restore-note").addEventListener("click", restorePreviousVersion);
-    
+    document.getElementById("share-note").addEventListener("click", openSharePanel);
+    document.getElementById("close-share").addEventListener("click", closeSharePanel);
+
 
     const editorTypeSelect = document.getElementById("editor-type");
     // let previousMode = editorTypeSelect.value;
@@ -325,7 +327,7 @@ function allListeners() {
     document.getElementById("save-note").addEventListener("click", SaveCurrent);
     richEditor.on("update", () => {
         if (loadingDocument) return;
-        const note = notes.find(n => n.id === activeNoteId);
+        const note = notes.find(n => n.id === activeNoteId); 
         if (!note || note.contentFormat !== 'richtext') return;
         updateDocumentStats();
         document.getElementById("save-status").textContent = "Not Saved";
@@ -996,6 +998,15 @@ function animateSample() {
     target.classList.remove("sample-animation");
     void target.offsetWidth;
     target.classList.add("sample-animation");
+}
+
+function openSharePanel() {
+    document.getElementById("share-panel").hidden = false;
+    showActivity("Sharing options opened");
+}
+
+function closeSharePanel() {
+    document.getElementById("share-panel").hidden = true;
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)

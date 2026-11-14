@@ -396,3 +396,19 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
     outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
+
+#share-panel {
+    border-radius: 24px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: editorEnter 0.5s ease-out;
+}
+
+#share-panel input,
+#share-panel button,
+#share-panel button {
+    padding: 12px;
+    border-radius: 10px;
+}
