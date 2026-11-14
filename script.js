@@ -230,6 +230,8 @@ function allListeners() {
     document.getElementById("restore-note").addEventListener("click", restorePreviousVersion);
     document.getElementById("share-note").addEventListener("click", openSharePanel);
     document.getElementById("close-share").addEventListener("click", closeSharePanel);
+    document.getElementById("generate-share-link").addEventListener("click", generateShareLink);
+    document.getElementById("copy-share-link").addEventListener("click", copyShareLink);
 
 
     const editorTypeSelect = document.getElementById("editor-type");
@@ -1007,6 +1009,39 @@ function openSharePanel() {
 
 function closeSharePanel() {
     document.getElementById("share-panel").hidden = true;
+}
+
+let shareLink;
+function generateShareLink() {
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return alert("No note selected to share.");
+    const permission = document.getElementById("share-permission").value;
+
+    const data = {
+        title: document.getElementById("note-title").value,
+        content:note.content === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
+        mode: note.contentFormat || "text",
+        format: note.contentFormat, 
+        permission
+    };
+    const encoded = encodeURIComponent(JSON.stringify(data));
+
+    currentShareLink = `${window.location.origin}${window.location.pathname}?share=${encoded}`;
+    document.getElementById("share-link").value = currentShareLink;
+    document.getElementById("copy-share-link").disabled = false;
+    showActivity("Share link generated!");
+}
+
+async function copyShareLink() {
+    if(!currentShareLink) return;
+
+    try {
+        await navigator.clipboard.writeText(currentShareLink);
+        showActivity("Link copied!");
+    } catch (err) {
+        alert("Failed to copy link: " + err);
+        showActivity("Failed to copy link.");
+    }
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
