@@ -1132,6 +1132,43 @@ function importSharedNote() {
     }
 }
 
+async function signUp() {
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+    });
+
+    if (error) {
+        alert("Sign-up failed: " + error.message);
+        showActivity("Sign-up failed!");
+    }
+    showActivity(data.session ? 
+        "Account Created!" :
+        "Check your email to confirm your account."
+    )
+}
+
+async function logIn() {
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    })
+
+    if (error) {
+        showActivity(error.message);
+        return;
+    }
+    showActivity("Logged in sucessfully!");
+}
+
+
+
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
 allListeners();
