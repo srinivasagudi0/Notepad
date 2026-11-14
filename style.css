@@ -412,3 +412,23 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
     padding: 12px;
     border-radius: 10px;
 }
+
+#action {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#action > button {
+    width: auto;
+    height: auto;
+    min-height: 44px;
+    padding: 12px 20px;
+    flex: 0 0 auto;
+}
+
+#share-panel {
+    width: min(100%, 420px);
+    padding: 10px;
+}

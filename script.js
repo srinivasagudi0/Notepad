@@ -1011,7 +1011,7 @@ function closeSharePanel() {
     document.getElementById("share-panel").hidden = true;
 }
 
-let shareLink;
+let currentShareLink;
 function generateShareLink() {
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return alert("No note selected to share.");
@@ -1019,14 +1019,14 @@ function generateShareLink() {
 
     const data = {
         title: document.getElementById("note-title").value,
-        content:note.content === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
+        content:note.contentFormat === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
         mode: note.contentFormat || "text",
         format: note.contentFormat, 
         permission
     };
     const encoded = encodeURIComponent(JSON.stringify(data));
 
-    currentShareLink = `${window.location.origin}${window.location.pathname}?share=${encoded}`;
+    currentShareLink = `${window.location.origin}${window.location.pathname}#share=${encoded}`;
     document.getElementById("share-link").value = currentShareLink;
     document.getElementById("copy-share-link").disabled = false;
     showActivity("Share link generated!");
