@@ -1180,7 +1180,23 @@ async function logOut() {
     showActivity("Logged out!");
 }
 
+async function updateAuthUI() {
+    const { data: { user } } = await supabase.auth.getUser();
 
+    document.getElementById("signup-btn").hidden = !!user;
+    document.getElementById("login-btn").hidden = !!user;
+    document.getElementById("logout-btn").hidden = !user;
+
+    document.getElementById("auth-email").hidden = !!user;
+    document.getElementById("auth-password").hidden = !!user;
+
+    document.getElementById("auth-status").textContent =
+        user ? `Logged in as ${user.email}` : "Not logged in";
+}
+
+supabase.auth.onAuthStateChange(() => {
+    updateAuthUI();
+})
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
