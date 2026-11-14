@@ -3,6 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import {marked} from "marked";
 import DOMPurify from "dompurify";
 import { supabase } from "./supabase.js";
+import { saveCloudNotes } from "./cloudNotes.js";
 
 
 let notes = [];
@@ -1195,6 +1196,27 @@ async function updateAuthUI() {
 supabase.auth.onAuthStateChange(() => {
     updateAuthUI();
 })
+
+//debug feature will let it stay here
+async function testCloudSave() {
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return;
+
+    const testNote = {
+        title: document.getElementById("note-title").value,
+        content: note.contentFormat === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
+        contentFormat: note.contentFormat || "text"
+    };
+
+    try {
+        const saved = await saveCloudNotes(testNote);
+        console.log("Cloud save successful:", saved);
+        showActivity("Cloud save successful!");
+    } catch (error) {
+        console.error("Cloud save failed:", error);
+        showActivity("Cloud save failed: " + error.message);
+    }
+}
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
