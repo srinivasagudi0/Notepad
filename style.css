@@ -370,3 +370,29 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
 }
+
+#editor-type {
+    padding: 12px 42px 12px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background-color: white;
+    color: #17243c;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: 
+        background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease;
+}
+
+#editor-type:hover {
+    background-color: #eaf0f8;
+    border-color: #2563eb;
+}
+
+#editor-type:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
