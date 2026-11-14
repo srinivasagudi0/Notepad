@@ -232,6 +232,7 @@ function allListeners() {
     document.getElementById("close-share").addEventListener("click", closeSharePanel);
     document.getElementById("generate-share-link").addEventListener("click", generateShareLink);
     document.getElementById("copy-share-link").addEventListener("click", copyShareLink);
+    document.getElementById("send-share-email").addEventListener("click", sendShareEmail);
 
 
     const editorTypeSelect = document.getElementById("editor-type");
@@ -1042,6 +1043,42 @@ async function copyShareLink() {
         alert("Failed to copy link: " + err);
         showActivity("Failed to copy link.");
     }
+}
+
+
+function sendShareEmail() {
+    const email = document.getElementById("share-email").value.trim();
+
+    if (!email) {
+        alert("Please enter an email address.");
+        return;
+    }
+
+    const emailInput = document.getElementById("share-email");
+
+    if (!emailInput.checkValidity()) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    if (!currentShareLink) {
+        alert("Please generate a share link first.");
+        return;
+    }
+
+    const subject = "NOTEPAD - Shared Note Invitation";
+    const body = `Hello! 
+    I've shared a note with you using NOTEPAD.
+
+    Open the note here:
+    ${currentShareLink}
+
+    See you there!`;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`; // used ai to help on this
+
+    window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    showActivity("Gmail invitation opened!");
 }
 
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
