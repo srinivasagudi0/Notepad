@@ -1081,6 +1081,56 @@ function sendShareEmail() {
     showActivity("Gmail invitation opened!");
 }
 
+function importSharedNote() {
+    const hash = window.location.hash;
+
+    if (!hash.startsWith("#share=")) return;
+    try {
+        const encoded = hash.slice("#share=".length);
+        const data = JSON.parse(decodeURIComponent(encoded));
+        
+        if (
+            typeof data.title !== "string" ||
+            typeof data.content !== "string"
+        ) {
+            throw new Error("Invalid shared note data.");
+        }
+
+        const allowedFormats = ["text", "html", "markdown", "richtext"];
+        const format = allowedFormats.includes(data.format) 
+            ? data.format
+            : "text";
+
+        const note = {
+            id: crypto.randomUUID(),
+            title: data.title,
+            content: data.content,
+            contentFormat: format,
+            pinned: false,
+            history: []
+        }
+
+        notes.push(note);
+        activeNoteId = note.id;
+
+        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+
+        window.history.replaceState(
+            null,
+            '',
+            window.location.pathname + window.location.search
+        );
+
+        renderNotes();
+        openNote(note.id);
+        showActivity("Shared note imported!");
+    } catch(erro) {
+        console.error("Failed to import shared note:", erro);
+        showActivity("Failed to import shared note: " + erro.message);
+    }
+}
+
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
 allListeners();
+importSharedNote();
