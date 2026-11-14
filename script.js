@@ -1183,15 +1183,12 @@ async function logOut() {
 async function updateAuthUI() {
     const { data: { user } } = await supabase.auth.getUser();
 
-    document.getElementById("signup-btn").hidden = !!user;
-    document.getElementById("login-btn").hidden = !!user;
-    document.getElementById("logout-btn").hidden = !user;
+    document.getElementById("auth-panel").hidden = !!user;
+    document.getElementById("app-workspace").hidden = !user;
 
-    document.getElementById("auth-email").hidden = !!user;
-    document.getElementById("auth-password").hidden = !!user;
-
-    document.getElementById("auth-status").textContent =
-        user ? `Logged in as ${user.email}` : "Not logged in";
+    if (user) {
+        showActivity("Welcome Back");
+    }
 }
 
 supabase.auth.onAuthStateChange(() => {
