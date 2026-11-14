@@ -461,3 +461,10 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
 [hidden] {
     display: none !important;
 }
+
+#app-workspace {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 100vh;
+}

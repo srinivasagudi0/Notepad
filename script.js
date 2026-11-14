@@ -213,10 +213,10 @@ function openNote(id) {
     const note = notes.find(n => n.id === id);
     if (!note) return;
     activeNoteId = note.id;
-    tile = note.title || "Untitled";
+    const title = note.title || "Untitled";
     loadNoteIntoEditors(note);
     renderNotes();
-    showActivity("Opened note: " + tile);
+    showActivity("Opened note: " + title);
 }
 
 function allListeners() {
@@ -344,6 +344,7 @@ function allListeners() {
     document.getElementById("signup-btn").addEventListener("click", signUp);
     document.getElementById("login-btn").addEventListener("click", logIn);
     document.getElementById("logout-btn").addEventListener("click", logOut);
+    importSharedNote();
 }
 
 function deleteNote() {
