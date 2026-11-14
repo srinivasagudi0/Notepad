@@ -230,7 +230,6 @@ function allListeners() {
     document.getElementById("restore-note").addEventListener("click", restorePreviousVersion);
     document.getElementById("share-note").addEventListener("click", openSharePanel);
     document.getElementById("close-share").addEventListener("click", closeSharePanel);
-    document.getElementById("generate-share-link").addEventListener("click", generateShareLink);
     document.getElementById("copy-share-link").addEventListener("click", copyShareLink);
     document.getElementById("send-share-email").addEventListener("click", sendShareEmail);
 
@@ -1005,6 +1004,7 @@ function animateSample() {
 
 function openSharePanel() {
     document.getElementById("share-panel").hidden = false;
+    generateShareLink();
     showActivity("Sharing options opened");
 }
 
@@ -1068,12 +1068,13 @@ function sendShareEmail() {
 
     const subject = "NOTEPAD - Shared Note Invitation";
     const body = `Hello! 
-    I've shared a note with you using NOTEPAD.
 
-    Open the note here:
-    ${currentShareLink}
+I've shared a note with you using NOTEPAD.
 
-    See you there!`;
+Open the note here:
+${currentShareLink}
+
+See you there!`;
 
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`; // used ai to help on this
 
