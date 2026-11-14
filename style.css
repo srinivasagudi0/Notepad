@@ -322,3 +322,51 @@ body, aside, main, button, input, textarea, #rich-text-toolbar, #rich-text-conte
     overflow: hidden;
     transition: min-width 0.9s ease, transform 0.9s ease, box-shadow 0.9s ease, padding 0.9s ease;
 }
+
+#find-replace {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background: #f8fafc;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    animation: editorEnter 0.5s ease-out;
+}
+
+#find-replace input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+#find-replace input:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+#find-replace button {
+    padding:10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+#find-replace button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.15);
+}
+
+#showFR {
+    padding:10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
