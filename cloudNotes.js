@@ -3,7 +3,7 @@ import { supabase } from "./supabase.js";
 export async function loadCloudNotes() {
     const { data, error } = await supabase
         .from("notes")
-        .select("*")
+        .select("*, note_collaborators(role)")
         .order("updated_at", { ascending: false });
 
     if (error) throw error;
@@ -54,8 +54,7 @@ export async function updateCloudNotes(cloudId, note) {
         .update({
             title: note.title,
             content: note.content,
-            content_format: note.contentFormat,
-            revision: (note.revision || 0) + 1
+            content_format: note.contentFormat
         })
         .eq("id", cloudId)
         .eq("revision", note.revision || 0)

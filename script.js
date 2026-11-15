@@ -8,6 +8,7 @@ import { loadCloudNotes, saveCloudNotes, updateCloudNotes, deleteCloudNote, invi
 
 let notes = [];
 let activeNoteId = null;
+let currentUserId = null;
 let loadingDocument = false;
 const richEditor = new Editor({
     element: document.getElementById("rich-text-content"),
@@ -41,20 +42,26 @@ function parse() {
     }
 }
 
-notes = parse();
-notes = notes.filter(note => note && note.id).map(note => ({
+function saveLocalNotes() {
+    if (currentUserId) localStorage.setItem("notepad-notes:" + currentUserId, JSON.stringify(notes));
+}
+
+const storedNotes = parse().filter(note => note && note.id).map(note => ({
     ...note,
     title: note.title || "",
     content: note.content || "",
     contentFormat: note.contentFormat || "text",
     pinned: Boolean(note.pinned)
 }));
+if (storedNotes.length) localStorage.setItem("notepad-unsynced-notes", JSON.stringify(storedNotes));
+notes = [];
 if (notes.length > 0) {
     activeNoteId = notes[0].id;
     loadNoteIntoEditors(notes[0]);
 }
 
-async function SaveCurrent() {
+let saveQueue = Promise.resolve();
+async function persistCurrent() {
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
     const oldContent = note.content
@@ -76,7 +83,7 @@ async function SaveCurrent() {
     }
 
 
-    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    saveLocalNotes();
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
     try {
@@ -85,12 +92,18 @@ async function SaveCurrent() {
     } catch (error) {
         console.error("Error saving note to cloud:", error);
         showActivity("Cloud Sync Failed");
+        throw error;
     }
 }
 
-function CreateNote() {
+function SaveCurrent() {
+    saveQueue = saveQueue.then(persistCurrent, persistCurrent);
+    return saveQueue;
+}
+
+async function CreateNote() {
     if (activeNoteId) {
-        SaveCurrent();
+        await SaveCurrent();
     }
 
     const selectElement = document.getElementById("editor-type");
@@ -116,7 +129,7 @@ function CreateNote() {
     loadNoteIntoEditors(note);
     countWords();
     clearInterval(saveTimer);
-    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    saveLocalNotes();
     document.getElementById("save-status").textContent = "Saved";
     renderNotes();
     showActivity("New Note Created!");
@@ -213,10 +226,10 @@ function renderNotes() {
     }
 }
 
-function openNote(id) {
+async function openNote(id) {
     clearTimeout(saveTimer);
     if (activeNoteId) {
-        SaveCurrent();
+        await SaveCurrent();
     }
     const note = notes.find(n => n.id === id);
     if (!note) return;
@@ -269,7 +282,7 @@ function allListeners() {
         note.content = nextContent;
         note.contentFormat = newMode;
         note.updatedAt = new Date().toISOString();
-        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+        saveLocalNotes();
 
         loadNoteIntoEditors(note);
         renderNotes();
@@ -355,8 +368,9 @@ function allListeners() {
     importSharedNote();
 }
 
-function deleteNote() {
+async function deleteNote() {
     if (!activeNoteId) return;
+    await SaveCurrent();
     const confirm = window.confirm("Are you sure you want to delete this note?");
     if (!confirm) return;
     const noteID = notes.find(n => n.id === activeNoteId);
@@ -364,7 +378,7 @@ function deleteNote() {
     if (noteID.cloudId) deleteCloudNote(noteID.cloudId).catch(() => showActivity("Cloud delete failed"));
 
     notes = notes.filter(n => n.id !== activeNoteId);
-    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    saveLocalNotes();
     activeNoteId = null;
     if (notes.length) {
         activeNoteId = notes[0].id;
@@ -390,7 +404,7 @@ function pinNote() {
     if (!note) return;
 
     note.pinned = !note.pinned;
-    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    saveLocalNotes();
     renderNotes();
     showActivity(note.pinned ? "Note Pinned!" : "Note Unpinned!");
 }
@@ -999,7 +1013,7 @@ function restorePreviousVersion() {
     note.content = old.content;
     note.contentFormat = old.mode;
     note.revision = (note.revision || 0) + 1;
-    localStorage.setItem("notepad-notes", JSON.stringify(notes));
+    saveLocalNotes();
     loadNoteIntoEditors(note);
     renderNotes();
     document.getElementById("save-status").textContent = "Restored";
@@ -1098,11 +1112,12 @@ function importSharedNote() {
     const hash = window.location.hash;
 
     if (hash.startsWith("#note=")) {
-        supabase.from("notes").select("*, note_collaborators(role)").eq("id", hash.slice(6)).maybeSingle().then(({data}) => {
+        supabase.from("notes").select("*, note_collaborators(role)").eq("id", hash.slice(6)).maybeSingle().then(async ({data}) => {
             if (!data) return showActivity("Note unavailable");
-            const note = {id: data.id, cloudId: data.id, ownerId: data.owner_id, title: data.title, content: data.content, contentFormat: data.content_format, revision: data.revision || 0, pinned: false, role: data.note_collaborators?.[0]?.role || "editor"};
+            const { data: { user } } = await supabase.auth.getUser();
+            const note = {id: data.id, cloudId: data.id, ownerId: data.owner_id, title: data.title, content: data.content, contentFormat: data.content_format, revision: data.revision || 0, pinned: false, role: data.owner_id === user?.id ? "owner" : (data.note_collaborators?.[0]?.role || "viewer")};
             notes = notes.filter(n => n.id !== note.id).concat(note); activeNoteId = note.id; loadNoteIntoEditors(note); renderNotes();
-            const editable = note.ownerId === note.role || note.role === "editor";
+            const editable = note.role === "owner" || note.role === "editor";
             ["note-title", "note-content", "editor-type", "save-note", "delete-note", "note-pin"].forEach(id => document.getElementById(id).disabled = !editable);
             history.replaceState(null, "", window.location.pathname + window.location.search);
         });
@@ -1138,7 +1153,7 @@ function importSharedNote() {
         notes.push(note);
         activeNoteId = note.id;
 
-        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+        saveLocalNotes();
 
         window.history.replaceState(
             null,
@@ -1199,7 +1214,7 @@ async function logOut() {
     }
     notes = [];
     activeNoteId = null;
-    localStorage.removeItem("notepad-notes");
+    currentUserId = null;
     renderNotes();
     showActivity("Logged out!");
 }
@@ -1211,15 +1226,17 @@ async function updateAuthUI() {
     document.getElementById("app-workspace").hidden = !user;
 
     if (user) {
+        currentUserId = user.id;
         try {
             const cloud = await loadCloudNotes();
-            const local = notes.filter(note => !note.cloudId && note.ownerId !== user.id);
-            notes = [...cloud.map(note => ({...note, id: note.id, cloudId: note.id, ownerId: note.owner_id, contentFormat: note.content_format, updatedAt: note.updated_at, revision: note.revision || 0, pinned: false})), ...local];
+            const local = JSON.parse(localStorage.getItem("notepad-notes:" + user.id) || "[]");
+            notes = [...cloud.map(note => ({...note, id: note.id, cloudId: note.id, ownerId: note.owner_id, role: note.owner_id === user.id ? "owner" : (note.note_collaborators?.[0]?.role || "viewer"), contentFormat: note.content_format, updatedAt: note.updated_at, revision: note.revision || 0, pinned: false})), ...local];
             activeNoteId = notes[0]?.id || null;
             if (notes[0]) loadNoteIntoEditors(notes[0]);
             renderNotes();
         } catch { showActivity("Cloud load failed"); }
         showActivity("Welcome Back");
+        importSharedNote();
     }
 }
 
@@ -1259,7 +1276,7 @@ async function syncNoteToCloud(note) {
         note.ownerId = user.id;
         note.revision = saved.revision || 0;
 
-        localStorage.setItem("notepad-notes", JSON.stringify(notes));
+        saveLocalNotes();
     }
 }
 
