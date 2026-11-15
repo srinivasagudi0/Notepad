@@ -995,7 +995,6 @@ function saveVersion(note, oldTitle, oldContent, oldMode) {
         content: oldContent,
         contentFormat: oldMode
     });
-    note.revision = (note.revision || 0) +1
     }
 
 function restorePreviousVersion() {
@@ -1012,7 +1011,6 @@ function restorePreviousVersion() {
     note.title = old.title;
     note.content = old.content;
     note.contentFormat = old.mode;
-    note.revision = (note.revision || 0) + 1;
     saveLocalNotes();
     loadNoteIntoEditors(note);
     renderNotes();
