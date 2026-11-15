@@ -1,0 +1,16 @@
+alter table public.notes add column if not exists revision integer not null default 0;
+alter table public.notes enable row level security;
+alter table public.note_collaborators enable row level security;
+drop policy if exists "notes_select" on public.notes;
+create policy "notes_select" on public.notes for select to authenticated using (owner_id = auth.uid() or exists (select 1 from public.note_collaborators c where c.note_id = notes.id and c.user_id = auth.uid()));
+drop policy if exists "notes_insert" on public.notes;
+create policy "notes_insert" on public.notes for insert to authenticated with check (owner_id = auth.uid());
+drop policy if exists "notes_update" on public.notes;
+create policy "notes_update" on public.notes for update to authenticated using (owner_id = auth.uid() or exists (select 1 from public.note_collaborators c where c.note_id = notes.id and c.user_id = auth.uid() and c.role = 'editor')) with check (owner_id = auth.uid() or exists (select 1 from public.note_collaborators c where c.note_id = notes.id and c.user_id = auth.uid() and c.role = 'editor'));
+drop policy if exists "notes_delete" on public.notes;
+create policy "notes_delete" on public.notes for delete to authenticated using (owner_id = auth.uid());
+drop policy if exists "collaborators_select" on public.note_collaborators;
+create policy "collaborators_select" on public.note_collaborators for select to authenticated using (user_id = auth.uid() or exists (select 1 from public.notes n where n.id = note_id and n.owner_id = auth.uid()));
+create or replace function public.invite_note_collaborator(p_note_id uuid, p_email text, p_role text) returns jsonb language plpgsql security definer set search_path = public as $$ declare invited uuid; begin if p_role not in ('viewer','editor') or not exists (select 1 from notes where id = p_note_id and owner_id = auth.uid()) then raise exception 'Not allowed'; end if; select id into invited from auth.users where lower(email) = lower(p_email); if invited is null then raise exception 'User is not registered'; end if; insert into note_collaborators(note_id,user_id,role) values (p_note_id,invited,p_role) on conflict (note_id,user_id) do update set role = excluded.role; return jsonb_build_object('user_id', invited, 'role', p_role); end $$;
+revoke all on function public.invite_note_collaborator(uuid,text,text) from public;
+grant execute on function public.invite_note_collaborator(uuid,text,text) to authenticated;

@@ -3,7 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import {marked} from "marked";
 import DOMPurify from "dompurify";
 import { supabase } from "./supabase.js";
-import { saveCloudNotes, updateCloudNotes } from "./cloudNotes.js";
+import { loadCloudNotes, saveCloudNotes, updateCloudNotes, deleteCloudNote, inviteCollaborator } from "./cloudNotes.js";
 
 
 let notes = [];
@@ -14,7 +14,7 @@ const richEditor = new Editor({
     extensions: [
         StarterKit.configure({
             gapcursor: false,
-            dropcursor: false,
+            dropcursor: false
         })
     ],
     content: "<p>Start writing your note here...</p>"
@@ -361,6 +361,7 @@ function deleteNote() {
     if (!confirm) return;
     const noteID = notes.find(n => n.id === activeNoteId);
     if (!noteID) return;
+    if (noteID.cloudId) deleteCloudNote(noteID.cloudId).catch(() => showActivity("Cloud delete failed"));
 
     notes = notes.filter(n => n.id !== activeNoteId);
     localStorage.setItem("notepad-notes", JSON.stringify(notes));
@@ -1031,16 +1032,8 @@ function generateShareLink() {
     if (!note) return alert("No note selected to share.");
     const permission = document.getElementById("share-permission").value;
 
-    const data = {
-        title: document.getElementById("note-title").value,
-        content:note.contentFormat === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
-        mode: note.contentFormat || "text",
-        format: note.contentFormat, 
-        permission
-    };
-    const encoded = encodeURIComponent(JSON.stringify(data));
-
-    currentShareLink = `${window.location.origin}${window.location.pathname}#share=${encoded}`;
+    if (!note.cloudId) return alert("Save this note before sharing.");
+    currentShareLink = `${window.location.origin}${window.location.pathname}#note=${note.cloudId}`;
     document.getElementById("share-link").value = currentShareLink;
     document.getElementById("copy-share-link").disabled = false;
     showActivity("Share link generated!");
@@ -1059,7 +1052,7 @@ async function copyShareLink() {
 }
 
 
-function sendShareEmail() {
+async function sendShareEmail() {
     const email = document.getElementById("share-email").value.trim();
 
     if (!email) {
@@ -1077,6 +1070,12 @@ function sendShareEmail() {
     if (!currentShareLink) {
         alert("Please generate a share link first.");
         return;
+    }
+
+    const note = notes.find(n => n.id === activeNoteId);
+    if (note?.cloudId) {
+        try { await inviteCollaborator(note.cloudId, email, document.getElementById("share-permission").value === "edit" ? "editor" : "viewer"); }
+        catch (error) { alert(error.message); return; }
     }
 
     const subject = "NOTEPAD - Shared Note Invitation";
@@ -1097,6 +1096,18 @@ See you there!`;
 
 function importSharedNote() {
     const hash = window.location.hash;
+
+    if (hash.startsWith("#note=")) {
+        supabase.from("notes").select("*, note_collaborators(role)").eq("id", hash.slice(6)).maybeSingle().then(({data}) => {
+            if (!data) return showActivity("Note unavailable");
+            const note = {id: data.id, cloudId: data.id, ownerId: data.owner_id, title: data.title, content: data.content, contentFormat: data.content_format, revision: data.revision || 0, pinned: false, role: data.note_collaborators?.[0]?.role || "editor"};
+            notes = notes.filter(n => n.id !== note.id).concat(note); activeNoteId = note.id; loadNoteIntoEditors(note); renderNotes();
+            const editable = note.ownerId === note.role || note.role === "editor";
+            ["note-title", "note-content", "editor-type", "save-note", "delete-note", "note-pin"].forEach(id => document.getElementById(id).disabled = !editable);
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+        });
+        return;
+    }
 
     if (!hash.startsWith("#share=")) return;
     try {
@@ -1186,6 +1197,10 @@ async function logOut() {
         showActivity(error.message);
         return;
     }
+    notes = [];
+    activeNoteId = null;
+    localStorage.removeItem("notepad-notes");
+    renderNotes();
     showActivity("Logged out!");
 }
 
@@ -1196,6 +1211,14 @@ async function updateAuthUI() {
     document.getElementById("app-workspace").hidden = !user;
 
     if (user) {
+        try {
+            const cloud = await loadCloudNotes();
+            const local = notes.filter(note => !note.cloudId && note.ownerId !== user.id);
+            notes = [...cloud.map(note => ({...note, id: note.id, cloudId: note.id, ownerId: note.owner_id, contentFormat: note.content_format, updatedAt: note.updated_at, revision: note.revision || 0, pinned: false})), ...local];
+            activeNoteId = notes[0]?.id || null;
+            if (notes[0]) loadNoteIntoEditors(notes[0]);
+            renderNotes();
+        } catch { showActivity("Cloud load failed"); }
         showActivity("Welcome Back");
     }
 }
@@ -1204,26 +1227,18 @@ supabase.auth.onAuthStateChange(() => {
     updateAuthUI();
 })
 
-//debug feature will let it stay here
-async function testCloudSave() {
-    const note = notes.find(n => n.id === activeNoteId);
-    if (!note) return;
-
-    const testNote = {
-        title: document.getElementById("note-title").value,
-        content: note.contentFormat === "richtext" ? richEditor.getHTML() : document.getElementById("note-content").value,
-        contentFormat: note.contentFormat || "text"
-    };
-
-    try {
-        const saved = await saveCloudNotes(testNote);
-        console.log("Cloud save successful:", saved);
-        showActivity("Cloud save successful!");
-    } catch (error) {
-        console.error("Cloud save failed:", error);
-        showActivity("Cloud save failed: " + error.message);
-    }
-}
+setInterval(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || document.getElementById("save-status").textContent === "Not Saved") return;
+    const cloud = await loadCloudNotes().catch(() => null);
+    if (!cloud) return;
+    cloud.forEach(remote => {
+        const local = notes.find(note => note.cloudId === remote.id);
+        if (local && remote.revision > (local.revision || 0)) Object.assign(local, {title: remote.title, content: remote.content, contentFormat: remote.content_format, revision: remote.revision});
+    });
+    const active = notes.find(note => note.id === activeNoteId);
+    if (active && active.revision && active.cloudId) loadNoteIntoEditors(active);
+}, 10000);
 
 async function syncNoteToCloud(note) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -1236,10 +1251,13 @@ async function syncNoteToCloud(note) {
     }
 
     if (note.cloudId) {
-        await updateCloudNotes(note.cloudId, note);
+        const saved = await updateCloudNotes(note.cloudId, note);
+        note.revision = saved.revision;
     } else {
         const saved = await saveCloudNotes(note);
         note.cloudId = saved.id;
+        note.ownerId = user.id;
+        note.revision = saved.revision || 0;
 
         localStorage.setItem("notepad-notes", JSON.stringify(notes));
     }
@@ -1248,4 +1266,3 @@ async function syncNoteToCloud(note) {
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
 allListeners();
-document.getElementById("test-cloud-save").addEventListener("click", testCloudSave);
