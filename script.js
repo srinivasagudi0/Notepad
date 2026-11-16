@@ -62,7 +62,7 @@ if (notes.length > 0) {
 
 let saveQueue = Promise.resolve();
 async function persistCurrent() {
-    saveInProgress = true;
+    
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
     const oldContent = note.content
@@ -86,6 +86,7 @@ async function persistCurrent() {
     saveLocalNotes();
     document.getElementById("save-status").textContent = "Syncing...";
     renderNotes();
+    saveInProgress = true;
     try {
         await syncNoteToCloud(note);
         document.getElementById("save-status").textContent = "Saved";
@@ -1271,7 +1272,7 @@ supabase.auth.onAuthStateChange(() => {
 
 setInterval(() => {
     refreshCloudNotes();
-})
+}, 10000);
 
 async function syncNoteToCloud(note) {
     const { data: { user } } = await supabase.auth.getUser();
