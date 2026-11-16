@@ -1230,6 +1230,22 @@ async function updateAuthUI() {
             const local = JSON.parse(localStorage.getItem("notepad-notes:" + user.id) || "[]");
             const cloudIds = new Set(cloud.map(note => note.id));
             const localOnly = local.filter(note => !cloudIds.has(note.cloudId || note.id))
+            notes = [
+                ...cloud.map(note => ({
+                    ...note,
+                    id: note.id,
+                    cloudId: note.id,
+                    ownerId: note.owner_id,
+                    role: note.owner_id,
+                    contentFormat: note.content_format,
+                    updatedAt: note.updated_at,
+                    revision: note.revision || 0,
+                    pinned: false
+                })),
+                ...localOnly
+            ];
+
+
             activeNoteId = notes[0]?.id || null;
             if (notes[0]) loadNoteIntoEditors(notes[0]);
             renderNotes();
