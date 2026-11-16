@@ -62,9 +62,9 @@ if (notes.length > 0) {
 
 let saveQueue = Promise.resolve();
 async function persistCurrent() {
-    
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
+    if (note.role === "viewer") throw new Error("Viewers cannot save notes.");
     saveInProgress = true;
     const oldContent = note.content
     const oldTitle = note.title;
@@ -213,9 +213,7 @@ function renderNotes() {
 
         noteElement.textContent = `${note.pinned ? "📌 " : ""}${note.title || "Untitled"}`;
 
-        noteElement.addEventListener("click", () => {
-            openNote(note.id);
-        });
+        noteElement.addEventListener("click", () => openNote(note.id).catch(() => showActivity("Save before switching failed")));
 
         if (note.id === activeNoteId) {
             noteElement.classList.add("active");
@@ -252,11 +250,11 @@ async function openNote(id) {
 function allListeners() {
     document.getElementById("note-title").addEventListener("input", countWords);
     document.getElementById("note-content").addEventListener("input", countWords);
-    document.getElementById("delete-note").addEventListener("click", deleteNote);
+    document.getElementById("delete-note").addEventListener("click", () => deleteNote().catch(() => showActivity("Delete failed")));
     document.getElementById("note-pin").addEventListener("click", pinNote);
     document.getElementById("search-notes").addEventListener("input", renderNotes);
-    document.getElementById("export-note").addEventListener("click", exportNotes);  
-    document.getElementById('new-note').addEventListener('click', CreateNote);
+    document.getElementById("export-note").addEventListener("click", () => exportNotes().catch(() => showActivity("Export failed")));  
+    document.getElementById('new-note').addEventListener('click', () => CreateNote().catch(() => showActivity("Save before creating failed")));
     document.getElementById("theme-toggle").addEventListener('click', ToggleTheme);
     document.getElementById("restore-note").addEventListener("click", restorePreviousVersion);
     document.getElementById("share-note").addEventListener("click", openSharePanel);
@@ -295,6 +293,7 @@ function allListeners() {
 
         loadNoteIntoEditors(note);
         renderNotes();
+        autoSave();
         animateEditorChange();
         showActivity("Editor mode changed to " + newMode);
     });
@@ -305,7 +304,7 @@ function allListeners() {
     document.addEventListener('keydown', (event) => {
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
             event.preventDefault();
-            SaveCurrent();
+            SaveCurrent().catch(() => {});
             showActivity("Note Saved!");
         }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
@@ -316,19 +315,19 @@ function allListeners() {
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "n") {
             event.preventDefault();
-            CreateNote();
+            CreateNote().catch(() => {});
             showActivity("New Note Created!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "e") {
             event.preventDefault();
-            exportNotes();
+            exportNotes().catch(() => {});
             showActivity("Note Exported!");
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "d") {
             event.preventDefault();
-            deleteNote();
+            deleteNote().catch(() => {});
             showActivity("Note Deleted!");
         }
 
@@ -357,7 +356,7 @@ function allListeners() {
     document.getElementById("replace-all-button").addEventListener("click", replaceAllText);
     document.getElementById("showFR").addEventListener('click', showFinder);
     document.getElementById("hideFR").addEventListener('click', hideFinder);
-    document.getElementById("save-note").addEventListener("click", SaveCurrent);
+    document.getElementById("save-note").addEventListener("click", () => SaveCurrent().catch(() => {}));
     richEditor.on("update", () => {
         if (loadingDocument) return;
         const note = notes.find(n => n.id === activeNoteId); 
@@ -379,12 +378,15 @@ function allListeners() {
 
 async function deleteNote() {
     if (!activeNoteId) return;
+    const noteID = notes.find(n => n.id === activeNoteId);
+    if (!noteID || (noteID.cloudId && noteID.role !== "owner")) return showActivity("Only the owner can delete this note.");
     await SaveCurrent();
     const confirm = window.confirm("Are you sure you want to delete this note?");
     if (!confirm) return;
-    const noteID = notes.find(n => n.id === activeNoteId);
-    if (!noteID) return;
-    if (noteID.cloudId) deleteCloudNote(noteID.cloudId).catch(() => showActivity("Cloud delete failed"));
+    if (noteID.cloudId) {
+        try { await deleteCloudNote(noteID.cloudId); }
+        catch (error) { showActivity("Cloud delete failed"); return; }
+    }
 
     notes = notes.filter(n => n.id !== activeNoteId);
     saveLocalNotes();
@@ -418,12 +420,12 @@ function pinNote() {
     showActivity(note.pinned ? "Note Pinned!" : "Note Unpinned!");
 }
 
-function exportNotes() {
+async function exportNotes() {
     if(!activeNoteId) {
         alert("No note selected to export");
         return;
     }
-    SaveCurrent();
+    await SaveCurrent();
     
     const note = notes.find(n=>n.id === activeNoteId);
     if(!note) {
@@ -740,7 +742,8 @@ let saveTimer;
 function autoSave() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-        SaveCurrent();
+        saveTimer = null;
+        SaveCurrent().catch(() => {});
     }, 3000)
     // change footer too 
     changeFooter();
@@ -830,6 +833,10 @@ function loadNoteIntoEditors(note) {
     document.getElementById("note-content").readOnly = !editable;
     document.getElementById("editor-type").disabled = !editable;
     document.getElementById("save-note").disabled = !editable;
+    document.getElementById("delete-note").disabled = !!note.cloudId && note.role !== "owner";
+    document.getElementById("share-note").disabled = note.role !== "owner";
+    ["restore-note", "fill-sample", "showFR", "find-button", "replace-button", "replace-all-button"].forEach(id => document.getElementById(id).disabled = !editable);
+    document.querySelectorAll("#rich-text-toolbar button").forEach(button => button.disabled = !editable);
 
     richEditor.setEditable(editable);
 
@@ -866,6 +873,7 @@ function updateDocumentStats() {
 function fillSample() {
     if (!activeNoteId) return;
     const note = notes.find(n => n.id === activeNoteId);
+    if (!note || note.role === "viewer") return;
     const doc = document.getElementById("note-content");
     const confirm = window.confirm("All of the text will be erased and replaced by sample.");
 
@@ -1017,7 +1025,7 @@ function saveVersion(note, oldTitle, oldContent, oldMode) {
 
 function restorePreviousVersion() {
     const note = notes.find(n => n.id === activeNoteId);
-    if (!note) {return;}
+    if (!note || note.role === "viewer") {return;}
     const history = getHistory(note.id);
     if (!history.length) return alert("No previous versions.");
     const old = history[history.length - 1];
@@ -1033,6 +1041,7 @@ function restorePreviousVersion() {
     loadNoteIntoEditors(note);
     renderNotes();
     document.getElementById("save-status").textContent = "Restored";
+    SaveCurrent().catch(() => {});
     showActivity("Restored previous version!");
 }
 
@@ -1231,6 +1240,10 @@ async function logOut() {
     notes = [];
     activeNoteId = null;
     currentUserId = null;
+    if (realtimeChannel) {
+        await supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+    }
     renderNotes();
     showActivity("Logged out!");
 }
@@ -1302,11 +1315,14 @@ async function syncNoteToCloud(note) {
     if (note.cloudId) {
         const saved = await updateCloudNotes(note.cloudId, note);
         note.revision = saved.revision;
+        note.updatedAt = saved.updated_at;
     } else {
         const saved = await saveCloudNotes(note);
         note.cloudId = saved.id;
         note.ownerId = user.id;
+        note.role = "owner";
         note.revision = saved.revision || 0;
+        note.updatedAt = saved.updated_at;
 
         saveLocalNotes();
     }
@@ -1368,6 +1384,17 @@ async function refreshCloudNotes() {
             }
         }
 
+        const cloudIds = new Set(cloud.map(note => note.id));
+        const visible = notes.filter(note => !note.cloudId || cloudIds.has(note.cloudId));
+        if (visible.length !== notes.length) {
+            notes = visible;
+            changed = true;
+            if (!notes.some(note => note.id === activeNoteId)) {
+                activeNoteId = notes[0]?.id || null;
+                activeChanged = true;
+            }
+        }
+
         if (changed) {
             saveLocalNotes();
             renderNotes();
@@ -1375,6 +1402,7 @@ async function refreshCloudNotes() {
             if (activeChanged) {
                 const active = notes.find(n => n.id === activeNoteId);
                 if (active) loadNoteIntoEditors(active);
+                else loadNoteIntoEditors({title: "", content: "", contentFormat: "text", role: "viewer"});
             }
 
             showActivity("☁️ Notes Updated");
@@ -1393,7 +1421,7 @@ async function startRealtimeSync() {
         await supabase.removeChannel(realtimeChannel);
     }
 
-    realtimeChannel = supabase.channel("notepad-sync").on("postgres_changes", {
+    realtimeChannel = supabase.channel("notepad-sync:" + currentUserId).on("postgres_changes", {
         event: "*",
         schema: "public",
         table: "notes"

@@ -5,10 +5,4 @@ Notepad is a simple text editor built with html and js.
 
 ## AI Declaration — NOTEPAD
 
-I used AI assistance during this stage of NOTEPAD development to identify and fix bugs, improve Supabase cloud synchronization, and implement collaboration features such as Viewer and Editor permissions.
-
-AI helped with debugging, authentication, database integration, and resolving issues that have to do with note saving.
-
-I reviewed the suggested changes, worked on integrating them into my existing project, and tested functionality where possible. The original project, its design, and its core features were developed by me.
-
-**AI was used for debugging, improving existing code, and completing the cloud collaboration functionality.**
+I used AI to find and fix some bugs. This is my first time doing an app that has this doc sharing feature. Mainly used Ai to improve cloud sync and add collab features such as viewers and editors permissions. I reviewed the changes and only then commited them. So I fully understand the code and can explain it.
