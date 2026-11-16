@@ -65,6 +65,7 @@ async function persistCurrent() {
     
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
+    saveInProgress = true;
     const oldContent = note.content
     const oldTitle = note.title;
     const oldMode = note.contentFormat || "text"
@@ -74,7 +75,7 @@ async function persistCurrent() {
 
     if (mode === "richtext") {
         note.content = richEditor.getHTML();
-    } else {
+    } else { 
         note.content = document.getElementById("note-content").value;
     }
     note.updatedAt = new Date().toISOString();
@@ -823,6 +824,15 @@ function connectRichToolbar() {
 
 function loadNoteIntoEditors(note) {
     if (!note) return;
+    const editable = note.role !== "viewer";
+
+    document.getElementById("note-title").readOnly = !editable;
+    document.getElementById("note-content").readOnly = !editable;
+    document.getElementById("editor-type").disabled = !editable;
+    document.getElementById("save-note").disabled = !editable;
+
+    richEditor.setEditable(editable);
+
     document.getElementById("note-title").value = note.title;
     document.getElementById("editor-type").value = note.contentFormat || "text";
     loadingDocument = true;
