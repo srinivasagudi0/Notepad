@@ -1236,7 +1236,9 @@ async function updateAuthUI() {
                     id: note.id,
                     cloudId: note.id,
                     ownerId: note.owner_id,
-                    role: note.owner_id,
+                    role: note.owner_id === user.id
+                        ? "owner"
+                        : (note.note_collaborators?.[0]?.role || "viewer"),
                     contentFormat: note.content_format,
                     updatedAt: note.updated_at,
                     revision: note.revision || 0,
