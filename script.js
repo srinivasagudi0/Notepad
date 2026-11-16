@@ -1306,6 +1306,24 @@ async function syncNoteToCloud(note) {
     }
 }
 
+let realtimeChannel = null;
+
+async function startRealtimeSync() {
+    if (realtimeChannel) {
+        await supabase.removeChannel(realtimeChannel);
+    }
+
+    realtimeChannel = supabase.channel("notepad-sync").on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "notes"
+    },
+    async () => {
+        await refreshCloudNotes();
+    }
+    ).subscribe();
+}
+
 // plan: after all the app is done, I will add ai (for correcting spell errros, autofill, predict next and will think more abiout this)
 
 allListeners();
