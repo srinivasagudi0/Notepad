@@ -62,6 +62,7 @@ if (notes.length > 0) {
 
 let saveQueue = Promise.resolve();
 async function persistCurrent() {
+    saveInProgress = true;
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
     const oldContent = note.content
@@ -1268,18 +1269,9 @@ supabase.auth.onAuthStateChange(() => {
     updateAuthUI();
 })
 
-setInterval(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || document.getElementById("save-status").textContent === "Not Saved") return;
-    const cloud = await loadCloudNotes().catch(() => null);
-    if (!cloud) return;
-    cloud.forEach(remote => {
-        const local = notes.find(note => note.cloudId === remote.id);
-        if (local && remote.revision > (local.revision || 0)) Object.assign(local, {title: remote.title, content: remote.content, contentFormat: remote.content_format, revision: remote.revision});
-    });
-    const active = notes.find(note => note.id === activeNoteId);
-    if (active && active.revision && active.cloudId) loadNoteIntoEditors(active);
-}, 10000);
+setInterval(() => {
+    refreshCloudNotes();
+})
 
 async function syncNoteToCloud(note) {
     const { data: { user } } = await supabase.auth.getUser();
