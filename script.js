@@ -97,6 +97,8 @@ async function persistCurrent() {
         console.error("Error saving note to cloud:", error);
         showActivity("Cloud Sync Failed");
         throw error;
+    } finally {
+        saveInProgress = false;
     }
 }
 
@@ -1258,6 +1260,7 @@ async function updateAuthUI() {
         } catch { showActivity("Cloud load failed"); }
         showActivity("Welcome Back");
         importSharedNote();
+        startRealtimeSync();
     }
 }
 
@@ -1303,6 +1306,80 @@ async function syncNoteToCloud(note) {
         note.revision = saved.revision || 0;
 
         saveLocalNotes();
+    }
+}
+
+let refreshRunning = false;
+let saveInProgress = false;
+
+async function refreshCloudNotes() {
+    if (refreshRunning || saveInProgress || !currentUserId) return;
+    const status = document.getElementById("save-status");
+    if (saveTimer || status.textContent !== "Saved") return;
+    refreshRunning = true;
+    const accountId = currentUserId;
+
+    try {
+        const cloud = await loadCloudNotes();
+        if (accountId !== currentUserId ||
+            saveInProgress || saveTimer ||
+            status.textContent !== "Saved") return;
+
+        let changed = false;
+        let activeChanged = false;
+
+        for (const remote of cloud) {
+            const local = notes.find(n =>
+                n.cloudId === remote.id || n.id === remote.id
+            );
+            if (!local) {
+                notes.push({
+                    ...remote,
+                    id: remote.id,
+                    cloudId: remote.id,
+                    ownerId: remote.owner_id,
+                    role: remote.owner_id === accountId
+                    ? "owner" : (remote.note_collaborators?.[0]?.role || "viewer"),
+                    contentFormat: remote.content_format,
+                    revision: remote.revision || 0,
+                    pinned: false
+                });
+                changed = true;
+                continue;
+            }
+            const remoteNewer =
+                (remote.revision || 0) > (local.revision || 0) ||
+                (remote.updated_at && local.updatedAt &&
+                 new Date(remote.updated_at) > new Date(local.updatedAt));
+
+            if (remoteNewer) {
+                Object.assign(local, {
+                    title: remote.title,
+                    content: remote.content,
+                    contentFormat: remote.content_format,
+                    revision: remote.revision || 0,
+                    updatedAt: remote.updated_at
+                });
+                changed = true;
+                if (local.id === activeNoteId) activeChanged = true;
+            }
+        }
+
+        if (changed) {
+            saveLocalNotes();
+            renderNotes();
+
+            if (activeChanged) {
+                const active = notes.find(n => n.id === activeNoteId);
+                if (active) loadNoteIntoEditors(active);
+            }
+
+            showActivity("☁️ Notes Updated");
+        }
+    } catch (error) {
+        console.error("Cloud refresh failed:", error);
+    } finally {
+        refreshRunning = false;
     }
 }
 
