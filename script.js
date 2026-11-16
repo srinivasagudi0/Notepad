@@ -1228,7 +1228,8 @@ async function updateAuthUI() {
         try {
             const cloud = await loadCloudNotes();
             const local = JSON.parse(localStorage.getItem("notepad-notes:" + user.id) || "[]");
-            notes = [...cloud.map(note => ({...note, id: note.id, cloudId: note.id, ownerId: note.owner_id, role: note.owner_id === user.id ? "owner" : (note.note_collaborators?.[0]?.role || "viewer"), contentFormat: note.content_format, updatedAt: note.updated_at, revision: note.revision || 0, pinned: false})), ...local];
+            const cloudIds = new Set(cloud.map(note => note.id));
+            const localOnly = local.filter(note => !cloudIds.has(note.cloudId || note.id))
             activeNoteId = notes[0]?.id || null;
             if (notes[0]) loadNoteIntoEditors(notes[0]);
             renderNotes();
@@ -1260,10 +1261,13 @@ async function syncNoteToCloud(note) {
 
     if (!user) return;
 
-    if (note.ownerId && note.ownerId !== user.id) {
-        showActivity("Note owner mismatch. Cannot sync to cloud.");
-        return;
+    if (note.role === "viewer") {
+        throw new Error("Veiwers cannot save notes.");
     }
+    if (note.ownerId && note.ownerId !== user.id && note.role !== "editor") {
+        throw new Error("You do not have permission to save this note.");
+    }
+
 
     if (note.cloudId) {
         const saved = await updateCloudNotes(note.cloudId, note);
