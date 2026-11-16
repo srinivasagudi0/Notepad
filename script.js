@@ -82,14 +82,18 @@ async function persistCurrent() {
     showActivity("Note Saved");
     }
 
-
     saveLocalNotes();
-    document.getElementById("save-status").textContent = "Saved";
+    document.getElementById("save-status").textContent = "Syncing...";
     renderNotes();
     try {
         await syncNoteToCloud(note);
+        document.getElementById("save-status").textContent = "Saved";
+        saveLocalNotes();
+
         showActivity("Note Synced to Cloud!");
     } catch (error) {
+        document.getElementById("save-status").textContent = "Sync Failed";
+
         console.error("Error saving note to cloud:", error);
         showActivity("Cloud Sync Failed");
         throw error;
@@ -1277,7 +1281,9 @@ setInterval(async () => {
 async function syncNoteToCloud(note) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+        throw new Error("Not logged in.")
+    };
 
     if (note.role === "viewer") {
         throw new Error("Veiwers cannot save notes.");
